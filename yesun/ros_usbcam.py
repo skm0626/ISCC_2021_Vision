@@ -63,6 +63,18 @@ def get_matrix(image, ul, ur, dl, dr):
 	return matrix
 
 
+# get object's center coordinates in warp image (이 함수의 input으로 yolo 정보 넣을 것!)
+def get_object_center(image, xmin, ymin, xmax, ymax, matrix): # 일단은 특정 객체의 좌표를 넣어서 구할 수 있도록 구현 
+	object_center = np.array([(xmin + xmax) / 2, ymax, 1], np.float32)
+	cv2.circle(img, ((xmin + xmax) / 2, ymax), 5, (255,255,255), -1)
+
+	tf_object_center = np.matmul(matrix, object_center)
+	tf_object_center /= tf_object_center[2]
+	print("trffic_rubber : ", tf_object_center)
+
+	return tf_object_center
+
+
 
 if __name__ == '__main__':
 	rospy.init_node('warp')
