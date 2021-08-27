@@ -91,14 +91,13 @@ if __name__ == '__main__':
 		np_matrix = np.array(matrix)
 		
 
-		#rubbercone location
-		rubbercone_center = np.array([120,400,1], np.float32)
-		cv2.circle(img, (120,400), 5, (255,255,255), -1)
+		#rubbercone location (임의로 정함)
+		xmin = 297
+		ymin = 281
+		xmax = 353
+		ymax = 364
 
-		tf_rubbercone_center = np.matmul(np_matrix, rubbercone_center)
-		tf_rubbercone_center /= tf_rubbercone_center[2]
-
-		print("trffic_rubber : ", tf_rubbercone_center)
+		tf_rubbercone_center = get_object_center(img, xmin, ymin, xmax, ymax, np_matrix)
 
 		tf_center = np.matmul(np_matrix, center)
 		tf_center /= tf_center[2]
@@ -107,9 +106,9 @@ if __name__ == '__main__':
 		distance = calculate(tf_center, tf_rubbercone_center)
 		img = check_center(img)
 
+
     		cv2.imshow("display", img)
     		cv2.imshow("warp", img_transformed)
     		cv2.waitKey(33)
-		print("-------------------------------------------------------------------")
 
 	cv2.destroyAllWindows()
