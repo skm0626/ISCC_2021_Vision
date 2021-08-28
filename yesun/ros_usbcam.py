@@ -20,6 +20,8 @@ up_right = [363,349]
 down_left = [216,415]
 down_right = [380,413]
 
+# numpy array save/load location
+matrix_path = '/home/jimink/ISCC_2021_Vision/yesun/matrix'
 
 def image_callback(img_data):
 	global bridge
@@ -90,6 +92,8 @@ if __name__ == '__main__':
 	    	img_transformed = cv2.warpPerspective(img, matrix, (width,height))
 		np_matrix = np.array(matrix)
 		
+		# save numpy array 
+		np.save(matrix_path, np_matrix)
 
 		#rubbercone location (임의로 정함)
 		xmin = 297
