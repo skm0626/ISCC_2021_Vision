@@ -92,8 +92,12 @@ if __name__ == '__main__':
 	    	img_transformed = cv2.warpPerspective(img, matrix, (width,height))
 		np_matrix = np.array(matrix)
 		
-		# save numpy array 
+		# save matrix 
 		np.save(matrix_path, np_matrix)
+		# load matrix
+		#load_matrix = np.load('/home/jimink/ISCC_2021_Vision/yesun/matrix.npy')
+		load_matrix = np.load(matrix_path + '.npy')
+		print('load_matrix', load_matrix)
 
 		#rubbercone location (임의로 정함)
 		xmin = 297
