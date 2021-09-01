@@ -17,7 +17,7 @@ img = np.empty(shape=[0])
 
 now = datetime.now()
 
-pixel = 80.0/200.0 # 0.4cm
+pixel = 80.0/100.0 # 0.8cm # 0.4cm
 center = np.array([288,480,1], np.float32)
 invisible_distance = 207
 
@@ -137,7 +137,7 @@ if __name__ == '__main__':
 	
 	out = cv2.VideoWriter('/home/foscar/ISCC_2021/src/vision_distance/src/ISCC_2021_Vision/yesun/8-31/origin_{}-{}-{}-{}-{}.avi'.format(now.year,now.month, now.day, now.hour, now.minute), cv2.VideoWriter_fourcc(*'MJPG'),30,(1280,720))
 	out2 = cv2.VideoWriter('/home/foscar/ISCC_2021/src/vision_distance/src/ISCC_2021_Vision/yesun/8-31/dot_origin_{}-{}-{}-{}-{}.avi'.format(now.year,now.month, now.day, now.hour, now.minute), cv2.VideoWriter_fourcc(*'MJPG'),30,(1280,720))
-	out3 = cv2.VideoWriter('/home/foscar/ISCC_2021/src/vision_distance/src/ISCC_2021_Vision/yesun/8-31/warp_{}-{}-{}-{}-{}.avi'.format(now.year,now.month, now.day, now.hour, now.minute), cv2.VideoWriter_fourcc(*'MJPG'),30,(1000,1000))
+	out3 = cv2.VideoWriter('/home/foscar/ISCC_2021/src/vision_distance/src/ISCC_2021_Vision/yesun/8-31/warp_{}-{}-{}-{}-{}.avi'.format(now.year,now.month, now.day, now.hour, now.minute), cv2.VideoWriter_fourcc(*'MJPG'),30,(1000,850))
 	rate = rospy.Rate(10)
 	while not rospy.is_shutdown():
 		if img.size != (1280*720*3):
@@ -149,7 +149,7 @@ if __name__ == '__main__':
 			pass
 		
 		width = 1000
-	    	height = 1000
+	    	height = 850
 		
 		# load matrix
 		if np.any(matrix) == None:
