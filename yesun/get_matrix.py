@@ -12,13 +12,15 @@ bridge = CvBridge()
 img = np.empty(shape=[0])
 
 pixel = 80.0/200.0 # 0.4cm
-center = np.array([298,480,1], np.float32)
-invisible_distance = 205
+center = np.array([288,480,1], np.float32)
+invisible_distance = 207
 
-up_left = [230,350]
-up_right = [363,349]
-down_left = [216,415]
-down_right = [380,413]
+up_left = [227,313]
+up_right = [346,313]
+down_left = [212,383]
+down_right = [362,383]
+
+matrix_path = '/home/foscar/ISCC_2021/src/vision_distance/src/ISCC_2021_Vision/yesun/matrix'
 
 
 def image_callback(img_data):
@@ -31,16 +33,16 @@ def get_matrix(image, ul, ur, dl, dr):
 	corner_points_array = np.float32([ul, ur, dl, dr])
 	
 	# visualization
-	cv2.circle(img, (230,350), 5, (255,0,0), -1) # up_left
-    	cv2.circle(img, (363,349), 5, (0,255,0), -1) # up_right
-    	cv2.circle(img, (216,415), 5, (0,0,255), -1) # down_left
-    	cv2.circle(img, (380,413), 5, (0,0,0), -1) # down_right
+	cv2.circle(img, (227,313), 5, (255,0,0), -1) # up_left
+    	cv2.circle(img, (346,313), 5, (0,255,0), -1) # up_right
+    	cv2.circle(img, (212,383), 5, (0,0,255), -1) # down_left
+    	cv2.circle(img, (362,383), 5, (0,0,0), -1) # down_right
 	
 	# Create an array with the parameters (the dimensions) required to build the matrix
-	img_up_left = [220,150] #[400,600]
-	img_up_right = [420,150] #[600,600]
-	img_down_left = [220,350] #[600,800]
-	img_down_right = [420,350] #[400,800]
+	img_up_left = [400,600]#[220,150] #[400,600]
+	img_up_right = [600,600]#[420,150] #[600,600]
+	img_down_left = [400,800]#[220,350] #[600,800]
+	img_down_right = [600,800]#[420,350] #[400,800]
 	img_params = np.float32([img_up_left, img_up_right, img_down_left, img_down_right])
 
     	# Compute and return the transformation matrix
@@ -57,8 +59,8 @@ if __name__ == '__main__':
 		if img.size != (640*480*3):
                     continue
 		
-		width = 640
-	    	height = 480
+		width = 1000
+	    	height = 1000
 
 		matrix = get_matrix(img, up_left, up_right, down_left, down_right)
 	    	img_transformed = cv2.warpPerspective(img, matrix, (width,height))
@@ -66,9 +68,7 @@ if __name__ == '__main__':
 		
 		# save matrix 
 		np.save(matrix_path, np_matrix)
-		# load matrix
-		#load_matrix = np.load(matrix_path + '.npy')
-		#print('load_matrix', load_matrix)
+		
 
     		cv2.imshow("display", img)
     		cv2.imshow("warp", img_transformed)
