@@ -1,3 +1,3 @@
 int32 flag
-float64 dist_x
-float64 dist_y
+float64 x
+float64 y
