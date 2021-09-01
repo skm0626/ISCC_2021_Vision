@@ -32,7 +32,6 @@ box_xmax = None
 box_ymin = None
 box_ymax = None
 
-matrix_path = '/home/foscar/ISCC_2021/src/vision_distance/src/ISCC_2021_Vision/yesun/matrix'
 matrix = None
 
 cone_pub = rospy.Publisher('color_cone', ColorconeArray, queue_size=10)
@@ -51,7 +50,7 @@ def bounding_callback(msg):
 	bbox = msg.bounding_boxes
 	# yellow_lst = []
 	# blue_lst = []
-	bounding_list = []
+	# bounding_list = []
 	if np.any(matrix) == None: return
 	
 	data_list = []
@@ -66,7 +65,6 @@ def bounding_callback(msg):
 		cone_flag = 0
 		if box_class == "yellow cone": cone_flag = 1
 
-		tf_object_center = get_object_center2(box_xmin, box_ymin, box_xmax, box_ymax)
 		tf_center = np.matmul(matrix, center)
 		tf_center /= tf_center[2]
 		'''
@@ -75,13 +73,10 @@ def bounding_callback(msg):
 		cv2.circle(img,(box_xmin,box_ymax),5,(122,0,0),-1)
 		cv2.circle(img,(box_xmax,box_ymax),5,(122,0,0),-1)		
 '''
-		distance = calculate(tf_center, tf_object_center)
-		print("{}) tf_center: {}, distance: {}".format(idx, tf_center, distance))
-		
 		cone = Colorcone()
 		cone.flag = cone_flag
-		cone.dist_x = distance[0]
-		cone.dist_y = distance[1]
+		cone.x = distance[0]
+		cone.y = distance[1]
 
 		data_list.append(cone)
 		bounding_list.append([box_class])
@@ -94,39 +89,10 @@ def bounding_callback(msg):
 	
 		
 
-def calculate(tf_center, tf_object_center):
-	distance = tf_center - tf_object_center
-	distance = distance * pixel
-	distance[1] += invisible_distance
-	#print("distance", distance)
-	# print("distance[0]", int(distance[0]), int(distance[1]))
-	return distance	
-
 #center_visualization
 def check_center(image):
 	cv2.circle(image,(288,240),5, (122,0,255),-1)
 	return image
-	
-
-# get object's center coordinates in warp image (이 함수의 input으로 yolo 정보 넣을 것!)
-def get_object_center(image, xmin, ymin, xmax, ymax, matrix): # 일단은 특정 객체의 좌표를 넣어서 구할 수 있도록 구현 
-	object_center = np.array([(xmin + xmax) / 2, ymax, 1], np.float32)
-	cv2.circle(img, (int((xmin + xmax) / 2), int(ymax)), 5, (255,255,255), -1)
-
-	tf_object_center = np.matmul(matrix, object_center)
-	tf_object_center /= tf_object_center[2]
-	# print("trffic_rubber : ", tf_object_center)
-
-	return tf_object_center
-
-def get_object_center2(xmin, ymin, xmax, ymax): 
-	object_center = np.array([(xmin + xmax) / 2, ymax, 1], np.float32)
-	tf_object_center = np.matmul(matrix, object_center)
-	tf_object_center /= tf_object_center[2]
-	# print("trffic_rubber : ", tf_object_center)
-
-	return tf_object_center
-
 
 
 if __name__ == '__main__':
@@ -150,11 +116,7 @@ if __name__ == '__main__':
 		
 		width = 1000
 	    	height = 850
-		
-		# load matrix
-		if np.any(matrix) == None:
-			matrix = np.load(matrix_path + '.npy')
-		#print('load matrix', matrix)
+	
 	    	img_transformed = cv2.warpPerspective(img, matrix, (width,height))
 		np_matrix = np.array(matrix)
 		if box_xmin==None or box_ymin==None or box_xmax==None or box_ymax==None: continue 
@@ -172,13 +134,10 @@ if __name__ == '__main__':
 		warp_xymin /= warp_xymin[2]
 		warp_xymax /= warp_xymax[2]
 
-		tf_object_center = get_object_center(img, xmin, ymin, xmax, ymax, np_matrix)
-
 		tf_center = np.matmul(np_matrix, center)
 		tf_center /= tf_center[2]
 		#print("tf_center: ", tf_center)
 
-		distance = calculate(tf_center, tf_object_center)
 		img = check_center(img)
 		# print('class name', box_class)
 
