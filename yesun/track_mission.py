@@ -151,7 +151,7 @@ if __name__ == '__main__':
 		cv2.circle(img,(box_xmin,box_ymax),5,(122,0,0),-1)
 		cv2.circle(img,(box_xmax,box_ymax),5,(122,0,0),-1)
 
-		cv2.circle(img, (288,480), 5, (255,0,0),-1 ) #center
+		cv2.circle(img, (288,480), 5, (255,0,0),-1) #center
 
 		cv2.circle(img_transformed,(int(warp_xymin[0]),int(warp_xymin[1])),5,(122,122,0),-1)
 		cv2.circle(img_transformed,(int(warp_xymin[0]),int(warp_xymax[1])),5,(122,122,0),-1)
@@ -172,6 +172,9 @@ if __name__ == '__main__':
 				elif (data_list[i].flag == 1):
 					blue_arr.append([data_list[i].flag, data_list[i].x, data_list[i].y])
 					cv2.circle(img_transformed, (int(data_list[i].x), int(data_list[i].y)), 5, (0,122,122), -1)
+			# sort by Y
+			yellow_arr = sorted(yellow_arr, key=lambda x:x[2])
+			blue_arr = sorted(blue_arr, key=lambda x:x[2])
 						
 		try:
 			out2.write(img)
