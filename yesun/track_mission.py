@@ -161,18 +161,18 @@ if __name__ == '__main__':
 		print("warp_xymin",warp_xymin)
 		
 		#yolo center visualization
-		if (len(bounding_list)!=0):
-			print("bounding_list**************",bounding_list[0][0])
-			for i in range (0,len(bounding_list)):
-				if (box_class =='yellow cone'):
-					cone_center_x = (warp_xymin[0]+warp_xymax[0])/2
-					cone_center_y = warp_xymax[1]
-				elif (box_class =='blue cone'):
-					cone_center_x = (warp_xymin[0]+warp_xymax[0])/2
-					cone_center_y = warp_xymax[1]
-				cv2.circle(img_transformed,(int(cone_center_x),int(cone_center_y)),5,(0,122,122),-1)
-				#print("cone_center", cone_center_x, cone_center_y)
-	
+		if (len(data_list) > 0):
+			print("data_list**************", data_list)
+			yellow_arr = []
+			blue_arr = []
+			for i in range (0, len(data_list)):
+				if (data_list[i].flag == 0):
+					yellow_arr.append([data_list[i].flag, data_list[i].x, data_list[i].y])
+					cv2.circle(img_transformed, (int(data_list[i].x), int(data_list[i].y)), 5, (0,122,122), -1)
+				elif (data_list[i].flag == 1):
+					blue_arr.append([data_list[i].flag, data_list[i].x, data_list[i].y])
+					cv2.circle(img_transformed, (int(data_list[i].x), int(data_list[i].y)), 5, (0,122,122), -1)
+						
 		try:
 			out2.write(img)
 			out3.write(img_transformed)
