@@ -142,6 +142,8 @@ if __name__ == '__main__':
 	    	matrix = cv2.getPerspectiveTransform(corner_points_array, img_params)
 		np_matrix = np.array(matrix)
 	    	img_transformed = cv2.warpPerspective(img, matrix, (width,height))
+		
+		black_img = np.zeros((width, height, 3), np.uint8)
 	
 		if box_xmin==None or box_ymin==None or box_xmax==None or box_ymax==None: continue 
 
@@ -153,8 +155,8 @@ if __name__ == '__main__':
 		warp_xymin = np.array([xmin,ymin,1], np.float32)
 		warp_xymax = np.array([xmax,ymax,1], np.float32)
 
-		warp_xymin = np.matmul(np_matrix,warp_xymin)
-		warp_xymax = np.matmul(np_matrix,warp_xymax)
+		warp_xymin = np.matmul(np_matrix, warp_xymin)
+		warp_xymax = np.matmul(np_matrix, warp_xymax)
 		warp_xymin /= warp_xymin[2]
 		warp_xymax /= warp_xymax[2]
 
@@ -165,10 +167,10 @@ if __name__ == '__main__':
 		img = check_center(img)
 		# print('class name', box_class)
 
-		cv2.circle(img,(227,313),5,(255,0,0),-1)
-		cv2.circle(img,(346,313),5,(0,255,0),-1)
-		cv2.circle(img,(212,383),5,(0,0,255),-1)
-		cv2.circle(img,(362,383),5,(0,0,0),-1)
+		cv2.circle(img,(up_left[0],up_left[1]),5,(255,0,0),-1)
+		cv2.circle(img,(up_right[0],up_right[1]),5,(0,255,0),-1)
+		cv2.circle(img,(down_left[0],down_left[1]),5,(0,0,255),-1)
+		cv2.circle(img,(down_right[0],down_right[1]),5,(0,0,0),-1)
 
 		cv2.circle(img, (box_xmin,box_ymin),5,(122,0,0),-1)
 		cv2.circle(img,(box_xmax,box_ymin),5,(122,0,0),-1)
@@ -189,16 +191,35 @@ if __name__ == '__main__':
 			print("data_list**************", data_list)
 			yellow_arr = []
 			blue_arr = []
+			print("len(data_list) :", len(data_list))
+			
+			yello_cnt = 0
+			blue_cnt = 0
+			
 			for i in range (0, len(data_list)):
+				print("i", i)
+				print("data list i", data_list[i])
 				if (data_list[i].flag == 0):
+					yello_cnt += 1
+					print("yello_cnt : ", yello_cnt)
 					yellow_arr.append([data_list[i].flag, data_list[i].x, data_list[i].y])
+					# print("yellow_arr", yellow_arr)
 					cv2.circle(img_transformed, (int(data_list[i].x), int(data_list[i].y)), 5, (0,122,122), -1)
 				elif (data_list[i].flag == 1):
-					blue_arr.append([data_list[i].flag, data_list[i].x, data_list[i].y])
-					cv2.circle(img_transformed, (int(data_list[i].x), int(data_list[i].y)), 5, (0,122,122), -1)
+					blue_cnt+=1
+					print("blue_cnt : ", blue_cnt)
+					blue_arr.append([data_list[i].flag, data_list[i].x, data_list[i].y])	
+					# print("blue_arr", blue_arr)
+					cv2.circle(img_transformed,(int(data_list[i].x),int(data_list[i].y)),5,(0,122,122),-1)
+				# print("cone_center", cone_center_x, cone_center_y)
+				
 			# sort by Y
-			yellow_arr = sorted(yellow_arr, key=lambda x:x[2])
-			blue_arr = sorted(blue_arr, key=lambda x:x[2])
+			yellow_arr = sorted(yellow_arr, key=lambda x:(x[2],x[1],x[0]))
+			print("sort_yellow", yellow_arr)
+			blue_arr = sorted(blue_arr, key=lambda x:(x[2],x[1],x[0]))	
+			print("sort_blue", blue_arr)
+			
+			# print("lennnnnnnnnnnnnnnnnn", len(data_list))
 						
 		try:
 			out2.write(img)
