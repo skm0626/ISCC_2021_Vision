@@ -17,14 +17,13 @@ img = np.empty(shape=[0])
 
 now = datetime.now()
 
-pixel = 80.0/200.0 # 0.4cm
 center = np.array([288,480,1], np.float32)
-invisible_distance = 207
 
 up_left = [227,313]
 up_right = [346,313]
 down_left = [212,383]
 down_right = [362,383]
+corner_points_array = np.float32([up_left,up_right,down_left,down_right])
 
 box_class = None
 box_xmin = None
@@ -32,10 +31,9 @@ box_xmax = None
 box_ymin = None
 box_ymax = None
 
-matrix_path = '/home/foscar/ISCC_2021/src/vision_distance/src/ISCC_2021_Vision/yesun/matrix'
 matrix = None
-
 cone_pub = rospy.Publisher('color_cone', ColorconeArray, queue_size=10)
+
 
 def image_callback(img_data):
 	global bridge
@@ -47,11 +45,12 @@ def bounding_callback(msg):
 	global box_class, box_xmin, box_xmax, box_ymin, box_ymax
 	global data_list
 	global bounding_list
+	global matrix
 	bbox_num = len(msg.bounding_boxes)
 	bbox = msg.bounding_boxes
 	# yellow_lst = []
 	# blue_lst = []
-	bounding_list = []
+	# bounding_list = []
 	if np.any(matrix) == None: return
 	
 	data_list = []
@@ -62,29 +61,32 @@ def bounding_callback(msg):
 		box_ymin = box.ymin
 		box_ymax = box.ymax
 
-		# blue(0), yellow(1)		
-		cone_flag = 0
-		if box_class == "yellow cone": cone_flag = 1
+		# blue(1), yellow(0)		
+		cone_flag = 1
+		if box_class == "yellow cone": cone_flag = 0
 
-		tf_object_center = get_object_center2(box_xmin, box_ymin, box_xmax, box_ymax)
-		tf_center = np.matmul(matrix, center)
-		tf_center /= tf_center[2]
 		'''
 		cv2.circle(img,(box_xmin,box_ymin),5,(122,0,0),-1)
 		cv2.circle(img,(box_xmax,box_ymin),5,(122,0,0),-1)
 		cv2.circle(img,(box_xmin,box_ymax),5,(122,0,0),-1)
 		cv2.circle(img,(box_xmax,box_ymax),5,(122,0,0),-1)		
-'''
-		distance = calculate(tf_center, tf_object_center)
-		print("{}) tf_center: {}, distance: {}".format(idx, tf_center, distance))
-		
+		'''
+
+		cone_x = (box_xmin+box_xmax)/2
+		cone_y = box_ymax
+		warp_cone = np.array([cone_x,cone_y,1], np.float32)
+		warp_cone = np.matmul(np_matrix, warp_cone)
+		warp_cone /=warp_cone[2]
+
 		cone = Colorcone()
 		cone.flag = cone_flag
-		cone.dist_x = distance[0]
-		cone.dist_y = distance[1]
+		cone.x = warp_cone[0]
+		cone.y = warp_cone[1]
+		#cone.dist_x = distance[0]
+		#cone.dist_y = distance[1]
 
 		data_list.append(cone)
-		bounding_list.append([box_class])
+		#bounding_list.append([box_class])
 		#print("Data_list", data_list)
 		#print("data_list len", len(data_list))
 
@@ -92,55 +94,30 @@ def bounding_callback(msg):
 	cone_array.visions = data_list
 	cone_pub.publish(cone_array)
 	
-		
-
-def calculate(tf_center, tf_object_center):
-	distance = tf_center - tf_object_center
-	distance = distance * pixel
-	distance[1] += invisible_distance
-	#print("distance", distance)
-	# print("distance[0]", int(distance[0]), int(distance[1]))
-	return distance	
-
 #center_visualization
 def check_center(image):
 	cv2.circle(image,(288,240),5, (122,0,255),-1)
 	return image
 	
 
-# get object's center coordinates in warp image (이 함수의 input으로 yolo 정보 넣을 것!)
-def get_object_center(image, xmin, ymin, xmax, ymax, matrix): # 일단은 특정 객체의 좌표를 넣어서 구할 수 있도록 구현 
-	object_center = np.array([(xmin + xmax) / 2, ymax, 1], np.float32)
-	cv2.circle(img, (int((xmin + xmax) / 2), int(ymax)), 5, (255,255,255), -1)
-
-	tf_object_center = np.matmul(matrix, object_center)
-	tf_object_center /= tf_object_center[2]
-	# print("trffic_rubber : ", tf_object_center)
-
-	return tf_object_center
-
-def get_object_center2(xmin, ymin, xmax, ymax): 
-	object_center = np.array([(xmin + xmax) / 2, ymax, 1], np.float32)
-	tf_object_center = np.matmul(matrix, object_center)
-	tf_object_center /= tf_object_center[2]
-	# print("trffic_rubber : ", tf_object_center)
-
-	return tf_object_center
-
-
-
 if __name__ == '__main__':
 	global matrix
+	#global img
 	rospy.init_node('warp')
 	image_sub = rospy.Subscriber("/usb_cam/image_raw/", Image, image_callback)
+	#cap = cv2.VideoCapture("/home/foscar/ISCC_2021/src/vision_distance/src/ISCC_2021_Vision/yesun/8-31/origin_2021-8-31-19-42.avi")
 	bbox_sub = rospy.Subscriber("/darknet_ros/bounding_boxes/", BoundingBoxes, bounding_callback)
 	
-	out = cv2.VideoWriter('/home/foscar/ISCC_2021/src/vision_distance/src/ISCC_2021_Vision/yesun/8-31/origin_{}-{}-{}-{}-{}.avi'.format(now.year,now.month, now.day, now.hour, now.minute), cv2.VideoWriter_fourcc(*'MJPG'),30,(1280,720))
-	out2 = cv2.VideoWriter('/home/foscar/ISCC_2021/src/vision_distance/src/ISCC_2021_Vision/yesun/8-31/dot_origin_{}-{}-{}-{}-{}.avi'.format(now.year,now.month, now.day, now.hour, now.minute), cv2.VideoWriter_fourcc(*'MJPG'),30,(1280,720))
-	out3 = cv2.VideoWriter('/home/foscar/ISCC_2021/src/vision_distance/src/ISCC_2021_Vision/yesun/8-31/warp_{}-{}-{}-{}-{}.avi'.format(now.year,now.month, now.day, now.hour, now.minute), cv2.VideoWriter_fourcc(*'MJPG'),30,(1000,1000))
+	out = cv2.VideoWriter('/home/foscar/ISCC_2021/src/vision_distance/src/ISCC_2021_Vision/yesun/8-31/origin_{}-{}-{}-{}-{}.avi'.format(now.year,now.month, now.day, now.hour, now.minute), cv2.VideoWriter_fourcc(*'MJPG'),30,(640,480))
+	out2 = cv2.VideoWriter('/home/foscar/ISCC_2021/src/vision_distance/src/ISCC_2021_Vision/yesun/8-31/dot_origin_{}-{}-{}-{}-{}.avi'.format(now.year,now.month, now.day, now.hour, now.minute), cv2.VideoWriter_fourcc(*'MJPG'),30,(640,480))
+	out3 = cv2.VideoWriter('/home/foscar/ISCC_2021/src/vision_distance/src/ISCC_2021_Vision/yesun/8-31/warp_{}-{}-{}-{}-{}.avi'.format(now.year,now.month, now.day, now.hour, now.minute), cv2.VideoWriter_fourcc(*'MJPG'),30,(1000,850))
 	rate = rospy.Rate(10)
-	while not rospy.is_shutdown():
-		if img.size != (1280*720*3):
+	while not rospy.is_shutdown(): #cap.isOpened()
+		#ret, img = cap.read()
+		#img = cv2.resize(img, (640,480))
+		#print(img.shape)
+		#print(ret)
+		if img.size != (640*480*3):
                     continue
 
 		try:
@@ -149,14 +126,21 @@ if __name__ == '__main__':
 			pass
 		
 		width = 1000
-	    	height = 1000
-		
-		# load matrix
-		if np.any(matrix) == None:
-			matrix = np.load(matrix_path + '.npy')
-		#print('load matrix', matrix)
-	    	img_transformed = cv2.warpPerspective(img, matrix, (width,height))
+	    	height = 850
+
+		img_up_left = [450,650]#[220,150] #[400,600]
+		img_up_right = [550,650]#[420,150] #[600,600]
+		img_down_left = [450,750]#[220,350] #[600,800]
+		img_down_right = [550,750]#[420,350] #[400,800]
+		img_params = np.float32([img_up_left, img_up_right, img_down_left, img_down_right])
+
+	    	# Compute and return the transformation matrix
+	    	matrix = cv2.getPerspectiveTransform(corner_points_array, img_params)
 		np_matrix = np.array(matrix)
+	    	img_transformed = cv2.warpPerspective(img, matrix, (width,height))
+
+		black_img = np.zeros((width, height, 3), np.uint8)
+
 		if box_xmin==None or box_ymin==None or box_xmax==None or box_ymax==None: continue 
 
 		xmin = float(box_xmin)
@@ -172,20 +156,13 @@ if __name__ == '__main__':
 		warp_xymin /= warp_xymin[2]
 		warp_xymax /= warp_xymax[2]
 
-		tf_object_center = get_object_center(img, xmin, ymin, xmax, ymax, np_matrix)
-
-		tf_center = np.matmul(np_matrix, center)
-		tf_center /= tf_center[2]
-		#print("tf_center: ", tf_center)
-
-		distance = calculate(tf_center, tf_object_center)
 		img = check_center(img)
 		# print('class name', box_class)
 
-		cv2.circle(img,(227,313),5,(255,0,0),-1)
-		cv2.circle(img,(346,313),5,(0,255,0),-1)
-		cv2.circle(img,(212,383),5,(0,0,255),-1)
-		cv2.circle(img,(362,383),5,(0,0,0),-1)
+		cv2.circle(img,(up_left[0],up_left[1]),5,(255,0,0),-1)
+		cv2.circle(img,(up_right[0],up_right[1]),5,(0,255,0),-1)
+		cv2.circle(img,(down_left[0],down_left[1]),5,(0,0,255),-1)
+		cv2.circle(img,(down_right[0],down_right[1]),5,(0,0,0),-1)
 
 		cv2.circle(img, (box_xmin,box_ymin),5,(122,0,0),-1)
 		cv2.circle(img,(box_xmax,box_ymin),5,(122,0,0),-1)
@@ -202,18 +179,48 @@ if __name__ == '__main__':
 		print("warp_xymin",warp_xymin)
 		
 		#yolo center visualization
-		if (len(bounding_list)!=0):
-			print("bounding_list**************",bounding_list[0][0])
-			for i in range (0,len(bounding_list)):
-				if (box_class =='yellow cone'):
-					cone_center_x = (warp_xymin[0]+warp_xymax[0])/2
-					cone_center_y = warp_xymax[1]
-				elif (box_class =='blue cone'):
-					cone_center_x = (warp_xymin[0]+warp_xymax[0])/2
-					cone_center_y = warp_xymax[1]
-				cv2.circle(img_transformed,(int(cone_center_x),int(cone_center_y)),5,(0,122,122),-1)
+		if (len(data_list) > 0):
+			print("bounding_list**************",data_list)
+			yellow_arr = []
+			blue_arr = []
+			print("len(data_list) :", len(data_list))
+			
+			yello_cnt = 0
+			blue_cnt = 0
+			
+			for i in range (0,len(data_list)):
+				print("i",i)
+				print("data list i", data_list[i])
+				if (data_list[i].flag == 0):
+					yello_cnt+=1
+					print("yello_cnt : ", yello_cnt)
+					yellow_arr.append([data_list[i].flag, data_list[i].x, data_list[i].y])
+					#print("yellow_arr", yellow_arr)
+					cv2.circle(img_transformed,(int(data_list[i].x),int(data_list[i].y)),5,(0,122,122),-1)
+				elif (data_list[i].flag == 1):
+					blue_cnt+=1
+					print("blue_cnt : ", blue_cnt)
+					blue_arr.append([data_list[i].flag, data_list[i].x, data_list[i].y])	
+					#print("blue_arr", blue_arr)
+					cv2.circle(img_transformed,(int(data_list[i].x),int(data_list[i].y)),5,(0,122,122),-1)
 				#print("cone_center", cone_center_x, cone_center_y)
-	
+			
+			yellow_arr = sorted(yellow_arr, key=lambda x:(x[2],x[1],x[0]))
+			print("sort_yellow", yellow_arr)
+			blue_arr = sorted(blue_arr, key=lambda x:(x[2],x[1],x[0]))	
+			print("sort_blue", blue_arr)
+
+			if (len(yellow_arr)>=2):
+				for j in range(0,len(yellow_arr)-1):
+					cv2.line(img_transformed,(int(yellow_arr[j][1]),int(yellow_arr[j][2])),(int(yellow_arr[j+1][1]),int(yellow_arr[j+1][2])),(255,0,0),5)
+					cv2.line(black_img,(int(yellow_arr[j][1]),int(yellow_arr[j][2])),(int(yellow_arr[j+1][1]),int(yellow_arr[j+1][2])),(255,0,0),5)
+			if (len(blue_arr)>=2):
+				for j in range(0,len(blue_arr)-1):
+					cv2.line(img_transformed,(int(blue_arr[j][1]),int(blue_arr[j][2])),(int(blue_arr[j+1][1]),int(blue_arr[j+1][2])),(0,255,0),5)
+					cv2.line(black_img,(int(blue_arr[j][1]),int(blue_arr[j][2])),(int(blue_arr[j+1][1]),int(blue_arr[j+1][2])),(0,255,0),5)
+				
+			#print("lennnnnnnnnnnnnnnnnn", len(data_list))
+
 		try:
 			out2.write(img)
 			out3.write(img_transformed)
@@ -222,6 +229,7 @@ if __name__ == '__main__':
 
 
     		cv2.imshow("display", img)
+		cv2.imshow("black_img : ", black_img)
     		cv2.imshow("warp", img_transformed)
 		#if cv2.waitKey(1) & 0xFF == ord('q'):
 		#	break    		
