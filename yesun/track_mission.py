@@ -46,6 +46,7 @@ def bounding_callback(msg):
 	global box_class, box_xmin, box_xmax, box_ymin, box_ymax
 	global data_list
 	global bounding_list
+	global matrix
 	bbox_num = len(msg.bounding_boxes)
 	bbox = msg.bounding_boxes
 	# yellow_lst = []
@@ -61,9 +62,9 @@ def bounding_callback(msg):
 		box_ymin = box.ymin
 		box_ymax = box.ymax
 
-		# blue(0), yellow(1)		
-		cone_flag = 0
-		if box_class == "yellow cone": cone_flag = 1
+		# blue(1), yellow(0)		
+		cone_flag = 1
+		if box_class == "yellow cone": cone_flag = 0
 
 		tf_center = np.matmul(matrix, center)
 		tf_center /= tf_center[2]
@@ -72,16 +73,24 @@ def bounding_callback(msg):
 		cv2.circle(img,(box_xmax,box_ymin),5,(122,0,0),-1)
 		cv2.circle(img,(box_xmin,box_ymax),5,(122,0,0),-1)
 		cv2.circle(img,(box_xmax,box_ymax),5,(122,0,0),-1)		
-'''
+		'''
+		cone_x = (box_xmin+box_xmax)/2
+		cone_y = box_ymax
+		warp_cone = np.array([cone_x, cone_y, 1], np.float32)
+		warp_cone = np.matmul(np_matrix, warp_cone)
+		warp_cone /= warp_cone[2]
+
 		cone = Colorcone()
 		cone.flag = cone_flag
-		cone.x = distance[0]
-		cone.y = distance[1]
+		cone.x = warp_cone[0]
+		cone.y = warp_cone[1]
+		# cone.dist_x = distance[0]
+		# cone.dist_y = distance[1]
 
 		data_list.append(cone)
-		bounding_list.append([box_class])
-		#print("Data_list", data_list)
-		#print("data_list len", len(data_list))
+		# bounding_list.append([box_class])
+		# print("Data_list", data_list)
+		# print("data_list len", len(data_list))
 
 	cone_array = ColorconeArray()
 	cone_array.visions = data_list
@@ -97,15 +106,21 @@ def check_center(image):
 
 if __name__ == '__main__':
 	global matrix
+	# global img
 	rospy.init_node('warp')
 	image_sub = rospy.Subscriber("/usb_cam/image_raw/", Image, image_callback)
+	# cap = cv2.VideoCapture("/home/foscar/ISCC_2021/src/vision_distance/src/ISCC_2021_Vision/yesun/8-31/origin_2021-8-31-19-42.avi")
 	bbox_sub = rospy.Subscriber("/darknet_ros/bounding_boxes/", BoundingBoxes, bounding_callback)
 	
-	out = cv2.VideoWriter('/home/foscar/ISCC_2021/src/vision_distance/src/ISCC_2021_Vision/yesun/8-31/origin_{}-{}-{}-{}-{}.avi'.format(now.year,now.month, now.day, now.hour, now.minute), cv2.VideoWriter_fourcc(*'MJPG'),30,(1280,720))
-	out2 = cv2.VideoWriter('/home/foscar/ISCC_2021/src/vision_distance/src/ISCC_2021_Vision/yesun/8-31/dot_origin_{}-{}-{}-{}-{}.avi'.format(now.year,now.month, now.day, now.hour, now.minute), cv2.VideoWriter_fourcc(*'MJPG'),30,(1280,720))
+	out = cv2.VideoWriter('/home/foscar/ISCC_2021/src/vision_distance/src/ISCC_2021_Vision/yesun/8-31/origin_{}-{}-{}-{}-{}.avi'.format(now.year,now.month, now.day, now.hour, now.minute), cv2.VideoWriter_fourcc(*'MJPG'),30,(640,480))
+	out2 = cv2.VideoWriter('/home/foscar/ISCC_2021/src/vision_distance/src/ISCC_2021_Vision/yesun/8-31/dot_origin_{}-{}-{}-{}-{}.avi'.format(now.year,now.month, now.day, now.hour, now.minute), cv2.VideoWriter_fourcc(*'MJPG'),30,(640,480))
 	out3 = cv2.VideoWriter('/home/foscar/ISCC_2021/src/vision_distance/src/ISCC_2021_Vision/yesun/8-31/warp_{}-{}-{}-{}-{}.avi'.format(now.year,now.month, now.day, now.hour, now.minute), cv2.VideoWriter_fourcc(*'MJPG'),30,(1000,850))
 	rate = rospy.Rate(10)
-	while not rospy.is_shutdown():
+	while not rospy.is_shutdown():  # cap.isOpened()
+		# ret, img = cap.read()
+		# img = cv2.resize(img, (640,480))
+		# print(img.shape)
+		# print(ret)
 		if img.size != (1280*720*3):
                     continue
 
