@@ -219,6 +219,16 @@ if __name__ == '__main__':
 			blue_arr = sorted(blue_arr, key=lambda x:(x[2],x[1],x[0]))	
 			print("sort_blue", blue_arr)
 			
+			if (len(yellow_arr)>=2):
+				for j in range(0,len(yellow_arr)-1):
+					cv2.line(img_transformed,(int(yellow_arr[j][1]),int(yellow_arr[j][2])),(int(yellow_arr[j+1][1]),int(yellow_arr[j+1][2])),(255,0,0),5)
+					cv2.line(black_img,(int(yellow_arr[j][1]),int(yellow_arr[j][2])),(int(yellow_arr[j+1][1]),int(yellow_arr[j+1][2])),(255,0,0),5)
+			if (len(blue_arr)>=2):
+				for j in range(0,len(blue_arr)-1):
+					cv2.line(img_transformed,(int(blue_arr[j][1]),int(blue_arr[j][2])),(int(blue_arr[j+1][1]),int(blue_arr[j+1][2])),(0,255,0),5)
+					cv2.line(black_img,(int(blue_arr[j][1]),int(blue_arr[j][2])),(int(blue_arr[j+1][1]),int(blue_arr[j+1][2])),(0,255,0),5)
+				
+			
 			# print("lennnnnnnnnnnnnnnnnn", len(data_list))
 						
 		try:
