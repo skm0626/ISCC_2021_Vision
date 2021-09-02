@@ -131,9 +131,18 @@ if __name__ == '__main__':
 		
 		width = 1000
 	    	height = 850
-	
-	    	img_transformed = cv2.warpPerspective(img, matrix, (width,height))
+		
+		img_up_left = [450,650] # [220,150] # [400,600]
+		img_up_right = [550,650] # [420,150] # [600,600]
+		img_down_left = [450,750] # [220,350] # [600,800]
+		img_down_right = [550,750] # [420,350] # [400,800]
+		img_params = np.float32([img_up_left, img_up_right, img_down_left, img_down_right])
+
+	    	# Compute and return the transformation matrix
+	    	matrix = cv2.getPerspectiveTransform(corner_points_array, img_params)
 		np_matrix = np.array(matrix)
+	    	img_transformed = cv2.warpPerspective(img, matrix, (width,height))
+	
 		if box_xmin==None or box_ymin==None or box_xmax==None or box_ymax==None: continue 
 
 		xmin = float(box_xmin)
