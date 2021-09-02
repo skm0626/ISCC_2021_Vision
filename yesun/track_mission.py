@@ -80,7 +80,7 @@ def bounding_callback(msg):
 		cone_y = box_ymax
 		warp_cone = np.array([cone_x,cone_y,1], np.float32)
 		warp_cone = np.matmul(np_matrix, warp_cone)
-		warp_cone /=warp_cone[2]
+		warp_cone /= warp_cone[2]
 
 		cone = Colorcone()
 		cone.flag = cone_flag
@@ -103,6 +103,7 @@ def check_center(image):
 	cv2.circle(image,(288,240),5, (122,0,255),-1)
 	return image
 	
+
 
 if __name__ == '__main__':
 	global matrix
@@ -156,14 +157,7 @@ if __name__ == '__main__':
 		# print(np_matrix)
 	    	img_transformed = cv2.warpPerspective(img, matrix, (width,height))
 
-		left_point = np.array([184.18,480,1], np.float32)
-		right_point = np.array([389.4,480,1], np.float32)
-		warp_left_point = np.matmul(np_matrix, left_point)
-		warp_left_point /= warp_left_point[2]
-		warp_right_point = np.matmul(np_matrix, right_point)
-		warp_right_point /= warp_right_point[2]
-
-		black_img = np.zeros((width, height, 3), np.uint8)
+		black_img = np.zeros((height, width, 3), np.uint8)
 
 		if box_xmin==None or box_ymin==None or box_xmax==None or box_ymax==None: continue 
 
@@ -235,18 +229,42 @@ if __name__ == '__main__':
 			blue_arr = sorted(blue_arr, key=lambda x:(x[2],x[1],x[0]))	
 			print("sort_blue", blue_arr)
 			
-			
+			'''
+			first_yellow_x = yellow_arr[len(yellow_arr)-1][0]
+			first_yellow_y = yellow_arr[len(yellow_arr)-1][1]
+			second_yellow_x = yellow_arr[len(yellow_arr)-2][0]
+			second_yellow_y = yellow_arr[len(yellow_arr)-2][1]
+			first_blue_x = blue_arr[len(blue_arr)-1][0]
+			first_blue_y = blue_arr[len(blue_arr)-1][1]
+			second_blue_x = blue_arr[len(blue_arr)-2][0]
+			second_blue_y = blue_arr[len(blue_arr)-2][1]
+
+			#왼쪽 노란 라바콘 y절편 
+			left_y = first_yellow_y - (second_yellow_y-first_yellow_y) / (second_yellow_x-first_yellow_x) * first_yellow_x
+			right_y = first_yellow_y - (second_yellow_y-first_yellow_y) / (second_yellow_x-first_yellow_x) * first_yellow_x
+			'''
+
+			left_point = np.array([70.18,520,1], np.float32) #[184.18,520,1]
+			right_point = np.array([570.4,520,1], np.float32) #[389.4,520,1]
+			warp_left_point = np.matmul(np_matrix, left_point)
+			warp_left_point /= warp_left_point[2]
+			warp_right_point = np.matmul(np_matrix, right_point)
+			warp_right_point /= warp_right_point[2]
+
 
 			if (len(yellow_arr) >= 2):
 				for j in range(0,len(yellow_arr)-1):
-					cv2.line(img_transformed,(int(warp_left_point[0]),int(warp_left_point[1])),(int(yellow_arr[len(yellow_arr)-1][1]),int(yellow_arr[len(yellow_arr)-1][2])),(255,0,0),5)
-					cv2.line(img_transformed,(int(yellow_arr[j][1]),int(yellow_arr[j][2])),(int(yellow_arr[j+1][1]),int(yellow_arr[j+1][2])),(255,0,0),5)
-					cv2.line(black_img,(int(yellow_arr[j][1]),int(yellow_arr[j][2])),(int(yellow_arr[j+1][1]),int(yellow_arr[j+1][2])),(255,0,0),5)
+					cv2.line(img_transformed,(int(warp_left_point[0]),int(warp_left_point[1])),(int(yellow_arr[len(yellow_arr)-1][1]),int(yellow_arr[len(yellow_arr)-1][2])),(255,0,0),15)
+					cv2.line(img_transformed,(int(yellow_arr[j][1]),int(yellow_arr[j][2])),(int(yellow_arr[j+1][1]),int(yellow_arr[j+1][2])),(255,0,0),15)
+					cv2.line(black_img,(int(warp_left_point[0]),int(warp_left_point[1])),(int(yellow_arr[len(yellow_arr)-1][1]),int(yellow_arr[len(yellow_arr)-1][2])),(255,255,255),15)
+					cv2.line(black_img,(int(yellow_arr[j][1]),int(yellow_arr[j][2])),(int(yellow_arr[j+1][1]),int(yellow_arr[j+1][2])),(255,255,255),15)
 			if (len(blue_arr)>=2):
 				for j in range(0,len(blue_arr)-1):
-					cv2.line(img_transformed,(int(warp_right_point[0]),int(warp_right_point[1])),(int(blue_arr[len(blue_arr)-1][1]),int(blue_arr[len(blue_arr)-1][2])),(0,255,0),5)
-					cv2.line(img_transformed,(int(blue_arr[j][1]),int(blue_arr[j][2])),(int(blue_arr[j+1][1]),int(blue_arr[j+1][2])),(0,255,0),5)
-					cv2.line(black_img,(int(blue_arr[j][1]),int(blue_arr[j][2])),(int(blue_arr[j+1][1]),int(blue_arr[j+1][2])),(0,255,0),5)
+					cv2.line(img_transformed,(int(warp_right_point[0]),int(warp_right_point[1])),(int(blue_arr[len(blue_arr)-1][1]),int(blue_arr[len(blue_arr)-1][2])),(0,255,0),15)
+					cv2.line(img_transformed,(int(blue_arr[j][1]),int(blue_arr[j][2])),(int(blue_arr[j+1][1]),int(blue_arr[j+1][2])),(0,255,0),15)
+					cv2.line(black_img,(int(warp_right_point[0]),int(warp_right_point[1])),(int(blue_arr[len(blue_arr)-1][1]),int(blue_arr[len(blue_arr)-1][2])),(255,255,255),15)
+					cv2.line(black_img,(int(blue_arr[j][1]),int(blue_arr[j][2])),(int(blue_arr[j+1][1]),int(blue_arr[j+1][2])),(255,255,255),15)
+
 
 
 		try:
