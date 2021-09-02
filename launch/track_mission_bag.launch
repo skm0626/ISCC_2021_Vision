@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<launch>
+  <!-- yolo -->
+  <include file="$(find darknet_ros)/launch/darknet_ros_cone.launch" />
+
+  <!-- rosbag play -->
+  <node pkg="rosbag" type="play" name="rosbag_play" 
+          args="$(find vision_distance)/bagfiles/room.bag" />
+
+  <!-- usb cam image -->
+  <node name="image_view" pkg="image_view" type="image_view" respawn="false" output="screen">
+    <remap from="image" to="/usb_cam/image_raw"/>
+    <param name="autosize" value="true"/>
+  </node> 
+  
+	<!-- track_mission.py -->>
+  <node pkg="vision_distance" type="test.py" name="track_mission"/>
+
+</launch>
