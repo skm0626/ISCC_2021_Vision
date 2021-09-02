@@ -10,20 +10,21 @@ from sensor_msgs.msg import Image
 from vision_distance.msg import Colorcone, ColorconeArray
 from geometry_msgs.msg import Point
 from cv_bridge import CvBridge
-
 from datetime import datetime
+from SlidingWindow import SlidingWindow
 
 bridge = CvBridge()
+slidingwindow = SlidingWindow()
 img = np.empty(shape=[0])
 
 now = datetime.now()
 
 center = np.array([288,480,1], np.float32)
 
-up_left = [223,315]
-up_right = [353,315]
-down_left = [207,383]
-down_right = [368,383]
+up_left = [253,315]
+up_right = [323,315]
+down_left = [247,383]
+down_right = [328,383]
 corner_points_array = np.float32([up_left,up_right,down_left,down_right])
 
 box_class = None
@@ -98,11 +99,12 @@ def bounding_callback(msg):
 	cone_array.visions = data_list
 	cone_pub.publish(cone_array)
 	
-#center_visualization
+# center_visualization
 def check_center(image):
 	cv2.circle(image,(288,240),5, (122,0,255),-1)
 	return image
 	
+
 
 
 if __name__ == '__main__':
@@ -114,9 +116,9 @@ if __name__ == '__main__':
 	#cap = cv2.VideoCapture("/home/foscar/ISCC_2021/src/vision_distance/src/ISCC_2021_Vision/yesun/8-31/origin_2021-8-31-19-42.avi")
 	bbox_sub = rospy.Subscriber("/darknet_ros/bounding_boxes/", BoundingBoxes, bounding_callback)
 	
-	out = cv2.VideoWriter('/home/foscar/ISCC_2021/src/vision_distance/src/ISCC_2021_Vision/yesun/9-2/origin_{}-{}-{}-{}-{}.avi'.format(now.year,now.month, now.day, now.hour, now.minute), cv2.VideoWriter_fourcc(*'MJPG'),30,(640,480))
-	out2 = cv2.VideoWriter('/home/foscar/ISCC_2021/src/vision_distance/src/ISCC_2021_Vision/yesun/9-2/dot_origin_{}-{}-{}-{}-{}.avi'.format(now.year,now.month, now.day, now.hour, now.minute), cv2.VideoWriter_fourcc(*'MJPG'),30,(640,480))
-	out3 = cv2.VideoWriter('/home/foscar/ISCC_2021/src/vision_distance/src/ISCC_2021_Vision/yesun/9-2/warp_{}-{}-{}-{}-{}.avi'.format(now.year,now.month, now.day, now.hour, now.minute), cv2.VideoWriter_fourcc(*'MJPG'),30,(1000,850))
+	#out = cv2.VideoWriter('/home/foscar/ISCC_2021/src/vision_distance/src/ISCC_2021_Vision/yesun/9-2/origin_{}-{}-{}-{}-{}.avi'.format(now.year,now.month, now.day, now.hour, now.minute), cv2.VideoWriter_fourcc(*'MJPG'),30,(640,480))
+	#out2 = cv2.VideoWriter('/home/foscar/ISCC_2021/src/vision_distance/src/ISCC_2021_Vision/yesun/9-2/dot_origin_{}-{}-{}-{}-{}.avi'.format(now.year,now.month, now.day, now.hour, now.minute), cv2.VideoWriter_fourcc(*'MJPG'),30,(640,480))
+	#out3 = cv2.VideoWriter('/home/foscar/ISCC_2021/src/vision_distance/src/ISCC_2021_Vision/yesun/9-2/warp_{}-{}-{}-{}-{}.avi'.format(now.year,now.month, now.day, now.hour, now.minute), cv2.VideoWriter_fourcc(*'MJPG'),30,(1000,850))
 	rate = rospy.Rate(10)
 	while not rospy.is_shutdown(): #cap.isOpened()
 		#ret, img = cap.read()
@@ -155,9 +157,10 @@ if __name__ == '__main__':
 		np_matrix = np.array(matrix)
 		np.save(matrix_path, np_matrix)	
 		# print(np_matrix)
-	    	img_transformed = cv2.warpPerspective(img, matrix, (width,height))
+	    	img_transformed = cv2.warpPerspective(img, matrix, (width, height))
 
 		black_img = np.zeros((height, width, 3), np.uint8)
+		#black_img_roi = black_img[200:850, 0:1000]
 
 		if box_xmin==None or box_ymin==None or box_xmax==None or box_ymax==None: continue 
 
@@ -229,20 +232,6 @@ if __name__ == '__main__':
 			blue_arr = sorted(blue_arr, key=lambda x:(x[2],x[1],x[0]))	
 			print("sort_blue", blue_arr)
 			
-			'''
-			first_yellow_x = yellow_arr[len(yellow_arr)-1][0]
-			first_yellow_y = yellow_arr[len(yellow_arr)-1][1]
-			second_yellow_x = yellow_arr[len(yellow_arr)-2][0]
-			second_yellow_y = yellow_arr[len(yellow_arr)-2][1]
-			first_blue_x = blue_arr[len(blue_arr)-1][0]
-			first_blue_y = blue_arr[len(blue_arr)-1][1]
-			second_blue_x = blue_arr[len(blue_arr)-2][0]
-			second_blue_y = blue_arr[len(blue_arr)-2][1]
-
-			#왼쪽 노란 라바콘 y절편 
-			left_y = first_yellow_y - (second_yellow_y-first_yellow_y) / (second_yellow_x-first_yellow_x) * first_yellow_x
-			right_y = first_yellow_y - (second_yellow_y-first_yellow_y) / (second_yellow_x-first_yellow_x) * first_yellow_x
-			'''
 
 			left_point = np.array([70.18,520,1], np.float32) #[184.18,520,1]
 			right_point = np.array([570.4,520,1], np.float32) #[389.4,520,1]
@@ -251,21 +240,42 @@ if __name__ == '__main__':
 			warp_right_point = np.matmul(np_matrix, right_point)
 			warp_right_point /= warp_right_point[2]
 
-
+			if (len(yellow_arr) == 1):
+				cv2.line(img_transformed,(int(warp_left_point[0]),int(warp_left_point[1])),(int(yellow_arr[len(yellow_arr)-1][1]),int(yellow_arr[len(yellow_arr)-1][2])),(255,0,0),15)
+				cv2.line(black_img,(int(warp_left_point[0]),int(warp_left_point[1])),(int(yellow_arr[len(yellow_arr)-1][1]),int(yellow_arr[len(yellow_arr)-1][2])),(255,255,255),15)
+			if (len(blue_arr) == 1):
+				cv2.line(img_transformed,(int(warp_right_point[0]),int(warp_right_point[1])),(int(blue_arr[len(blue_arr)-1][1]),int(blue_arr[len(blue_arr)-1][2])),(255,0,0),15)
+				cv2.line(black_img,(int(warp_right_point[0]),int(warp_right_point[1])),(int(blue_arr[len(blue_arr)-1][1]),int(blue_arr[len(blue_arr)-1][2])),(255,255,255),15)
 			if (len(yellow_arr) >= 2):
 				for j in range(0,len(yellow_arr)-1):
 					cv2.line(img_transformed,(int(warp_left_point[0]),int(warp_left_point[1])),(int(yellow_arr[len(yellow_arr)-1][1]),int(yellow_arr[len(yellow_arr)-1][2])),(255,0,0),15)
 					cv2.line(img_transformed,(int(yellow_arr[j][1]),int(yellow_arr[j][2])),(int(yellow_arr[j+1][1]),int(yellow_arr[j+1][2])),(255,0,0),15)
 					cv2.line(black_img,(int(warp_left_point[0]),int(warp_left_point[1])),(int(yellow_arr[len(yellow_arr)-1][1]),int(yellow_arr[len(yellow_arr)-1][2])),(255,255,255),15)
 					cv2.line(black_img,(int(yellow_arr[j][1]),int(yellow_arr[j][2])),(int(yellow_arr[j+1][1]),int(yellow_arr[j+1][2])),(255,255,255),15)
-			if (len(blue_arr)>=2):
+			if (len(blue_arr) >= 2):
 				for j in range(0,len(blue_arr)-1):
 					cv2.line(img_transformed,(int(warp_right_point[0]),int(warp_right_point[1])),(int(blue_arr[len(blue_arr)-1][1]),int(blue_arr[len(blue_arr)-1][2])),(0,255,0),15)
 					cv2.line(img_transformed,(int(blue_arr[j][1]),int(blue_arr[j][2])),(int(blue_arr[j+1][1]),int(blue_arr[j+1][2])),(0,255,0),15)
 					cv2.line(black_img,(int(warp_right_point[0]),int(warp_right_point[1])),(int(blue_arr[len(blue_arr)-1][1]),int(blue_arr[len(blue_arr)-1][2])),(255,255,255),15)
 					cv2.line(black_img,(int(blue_arr[j][1]),int(blue_arr[j][2])),(int(blue_arr[j+1][1]),int(blue_arr[j+1][2])),(255,255,255),15)
+			
+			#print("warp_left_point:", warp_left_point)
+			#print("warp_right_point:", warp_right_point)
+			#('warp_left_point:', array([ 290.31703522,  886.70705631,    1.        ]))
+			#('warp_right_point:', array([ 775.20601084,  886.70705631,    1.        ]))
 
+			# left range
+			cv2.circle(black_img,(200, 850),8,(255,0,255),-1)
+			cv2.circle(black_img,(400, 850),8,(255,0,255),-1)
+			cv2.circle(black_img,(200, 600),8,(255,0,255),-1)
+			cv2.circle(black_img,(400, 650),8,(255,0,255),-1)
+			# right range
+			cv2.circle(black_img,(650, 850),8,(255,0,255),-1)
+			cv2.circle(black_img,(850, 850),8,(255,0,255),-1)
+			cv2.circle(black_img,(850, 600),8,(255,0,255),-1)
+			cv2.circle(black_img,(650, 650),8,(255,0,255),-1)
 
+		out_img, left_roi, right_roi, x_location = slidingwindow.slidingwindow(black_img)
 
 		try:
 			out2.write(img)
@@ -277,6 +287,10 @@ if __name__ == '__main__':
     		cv2.imshow("display", img)
 		cv2.imshow("black_img : ", black_img)
     		cv2.imshow("warp", img_transformed)
+       		cv2.imshow('out_img', out_img)
+       		cv2.imshow('left_roi', left_roi)
+       		cv2.imshow('right_roi', right_roi)
+
 		#if cv2.waitKey(1) & 0xFF == ord('q'):
 		#	break    		
 		cv2.waitKey(33)
