@@ -1,6 +1,7 @@
 #!/usr/bin/python
 #-*- encoding: utf-8 -*-
 
+# video : /home/foscar/ISCC_2021/src/vision_distance/src/ISCC_2021_Vision/yesun/9-2/origin_2021-9-2-13-41.avi
 import cv2, rospy, time
 import numpy as np
 import math
@@ -55,7 +56,7 @@ def bounding_callback(msg):
 	# yellow_lst = []
 	# blue_lst = []
 	# bounding_list = []
-	if np.any(matrix)c == None: return
+	if np.any(matrix) == None: return
 	
 	data_list = []
 
@@ -101,7 +102,7 @@ def bounding_callback(msg):
 	
 # center_visualization
 def check_center(image):
-	cv2.circle(image, (288, 240), 5, (122, 0, 255), -1)
+	cv2.circle(image,(288,240),5, (122,0,255),-1)
 	return image
 	
 
@@ -203,7 +204,7 @@ if __name__ == '__main__':
 
 		print("warp_xymin", warp_xymin)
 		
-		#yolo center visualization
+		# yolo center visualization
 		if (len(new_data_list) > 0):
 			print("data_list**************", data_list)
 			yellow_arr = []
@@ -267,17 +268,17 @@ if __name__ == '__main__':
 			#print("warp_right_point:", warp_right_point)
 			#('warp_left_point:', array([ 290.31703522,  886.70705631,    1.        ]))
 			#('warp_right_point:', array([ 775.20601084,  886.70705631,    1.        ]))
-
-			# left range
-			cv2.circle(black_img, (200, 850), 8, (255,0,255), -1)
-			cv2.circle(black_img, (400, 850), 8, (255,0,255), -1)
-			cv2.circle(black_img, (200, 600), 8, (255,0,255), -1)
-			cv2.circle(black_img, (400, 650), 8, (255,0,255), -1)
-			# right range
-			cv2.circle(black_img, (650, 850), 8, (255,0,255), -1)
-			cv2.circle(black_img, (850, 850), 8, (255,0,255), -1)
-			cv2.circle(black_img, (850, 600), 8, (255,0,255), -1)
-			cv2.circle(black_img, (650, 650), 8, (255,0,255), -1)
+			
+			# # left range
+			# cv2.circle(black_img,(200, 850),8,(255,0,255),-1)
+			# cv2.circle(black_img,(400, 850),8,(255,0,255),-1)
+			# cv2.circle(black_img,(200, 600),8,(255,0,255),-1)
+			# cv2.circle(black_img,(400, 650),8,(255,0,255),-1)
+			# # right range
+			# cv2.circle(black_img,(650, 850),8,(255,0,255),-1)
+			# cv2.circle(black_img,(850, 850),8,(255,0,255),-1)
+			# cv2.circle(black_img,(850, 600),8,(255,0,255),-1)
+			# cv2.circle(black_img,(650, 650),8,(255,0,255),-1)
 
 		out_img, left_roi, right_roi, x_location = slidingwindow.slidingwindow(black_img)
 
@@ -288,12 +289,12 @@ if __name__ == '__main__':
 			pass
 
 
-    		cv2.imshow("display", img)
+		#cv2.imshow("display", img)
 		cv2.imshow("black_img : ", black_img)
-    		cv2.imshow("warp", img_transformed)
-       		cv2.imshow('out_img', out_img)
-       		cv2.imshow('left_roi', left_roi)
-       		cv2.imshow('right_roi', right_roi)
+		#cv2.imshow("warp", img_transformed)
+		cv2.imshow('out_img', out_img)
+		#cv2.imshow('left_roi', left_roi)
+		#cv2.imshow('right_roi', right_roi)
 
 		#if cv2.waitKey(1) & 0xFF == ord('q'):
 		#	break    		
