@@ -55,7 +55,7 @@ def bounding_callback(msg):
 	# yellow_lst = []
 	# blue_lst = []
 	# bounding_list = []
-	if np.any(matrix) == None: return
+	if np.any(matrix)c == None: return
 	
 	data_list = []
 
@@ -77,9 +77,9 @@ def bounding_callback(msg):
 		cv2.circle(img,(box_xmax,box_ymax),5,(122,0,0),-1)		
 		'''
 
-		cone_x = (box_xmin+box_xmax)/2
+		cone_x = (box_xmin+box_xmax) / 2
 		cone_y = box_ymax
-		warp_cone = np.array([cone_x,cone_y,1], np.float32)
+		warp_cone = np.array([cone_x, cone_y, 1], np.float32)
 		warp_cone = np.matmul(np_matrix, warp_cone)
 		warp_cone /= warp_cone[2]
 
@@ -101,7 +101,7 @@ def bounding_callback(msg):
 	
 # center_visualization
 def check_center(image):
-	cv2.circle(image,(288,240),5, (122,0,255),-1)
+	cv2.circle(image, (288, 240), 5, (122, 0, 255), -1)
 	return image
 	
 
@@ -112,7 +112,11 @@ if __name__ == '__main__':
 	#global data_list
 	#global img
 	rospy.init_node('warp')
-	image_sub = rospy.Subscriber("/usb_cam/image_raw/", Image, image_callback)
+	# Video 용 Subscriber
+	image_sub = rospy.Subscriber("/videofile/image_raw/", Image, image_callback)
+	# USB CAMERA 용 Subscriber	
+	#image_sub = rospy.Subscriber("/usb_cam/image_raw/", Image, image_callback)
+	
 	#cap = cv2.VideoCapture("/home/foscar/ISCC_2021/src/vision_distance/src/ISCC_2021_Vision/yesun/8-31/origin_2021-8-31-19-42.avi")
 	bbox_sub = rospy.Subscriber("/darknet_ros/bounding_boxes/", BoundingBoxes, bounding_callback)
 	
@@ -125,7 +129,7 @@ if __name__ == '__main__':
 		#img = cv2.resize(img, (640,480))
 		#print(img.shape)
 		#print(ret)
-		if img.size != (640*480*3):
+		if img.size != (640 * 480 * 3):
                     continue
 
 		try:
@@ -138,7 +142,7 @@ if __name__ == '__main__':
 		
 		new_data_list = []
 		
-		if len(data_list)>0:
+		if len(data_list) > 0:
 			new_data_list = copy.deepcopy(data_list)
 			#new_data_list = data_list.copy()
 			print("new_data_list %%%%%%%%%%%%%% ", new_data_list)
@@ -146,10 +150,10 @@ if __name__ == '__main__':
 		#	continue
 				
 		
-		img_up_left = [450,650]#[220,150] #[400,600]
-		img_up_right = [550,650]#[420,150] #[600,600]
-		img_down_left = [450,750]#[220,350] #[600,800]
-		img_down_right = [550,750]#[420,350] #[400,800]
+		img_up_left = [450, 650] #[220,150] #[400,600]
+		img_up_right = [550, 650] #[420,150] #[600,600]
+		img_down_left = [450, 750] #[220,350] #[600,800]
+		img_down_right = [550, 750] #[420,350] #[400,800]
 		img_params = np.float32([img_up_left, img_up_right, img_down_left, img_down_right])
 
 	    	# Compute and return the transformation matrix
@@ -162,42 +166,42 @@ if __name__ == '__main__':
 		black_img = np.zeros((height, width, 3), np.uint8)
 		#black_img_roi = black_img[200:850, 0:1000]
 
-		if box_xmin==None or box_ymin==None or box_xmax==None or box_ymax==None: continue 
+		if box_xmin == None or box_ymin == None or box_xmax == None or box_ymax == None: continue 
 
 		xmin = float(box_xmin)
 		ymin = float(box_ymin)
 		xmax = float(box_xmax)
 		ymax = float(box_ymax)
 
-		warp_xymin = np.array([xmin,ymin,1], np.float32)
-		warp_xymax = np.array([xmax,ymax,1], np.float32)
+		warp_xymin = np.array([xmin, ymin, 1], np.float32)
+		warp_xymax = np.array([xmax, ymax, 1], np.float32)
 
-		warp_xymin = np.matmul(np_matrix,warp_xymin)
-		warp_xymax = np.matmul(np_matrix,warp_xymax)
+		warp_xymin = np.matmul(np_matrix, warp_xymin)
+		warp_xymax = np.matmul(np_matrix, warp_xymax)
 		warp_xymin /= warp_xymin[2]
 		warp_xymax /= warp_xymax[2]
 
 		img = check_center(img)
 		# print('class name', box_class)
 
-		cv2.circle(img,(up_left[0],up_left[1]),5,(255,0,0),-1)
-		cv2.circle(img,(up_right[0],up_right[1]),5,(0,255,0),-1)
-		cv2.circle(img,(down_left[0],down_left[1]),5,(0,0,255),-1)
-		cv2.circle(img,(down_right[0],down_right[1]),5,(0,0,0),-1)
+		cv2.circle(img, (up_left[0], up_left[1]), 5, (255,0,0), -1)
+		cv2.circle(img, (up_right[0], up_right[1]), 5, (0,255,0), -1)
+		cv2.circle(img, (down_left[0], down_left[1]), 5, (0,0,255), -1)
+		cv2.circle(img, (down_right[0], down_right[1]), 5, (0,0,0), -1)
 
-		cv2.circle(img, (box_xmin,box_ymin),5,(122,0,0),-1)
-		cv2.circle(img,(box_xmax,box_ymin),5,(122,0,0),-1)
-		cv2.circle(img,(box_xmin,box_ymax),5,(122,0,0),-1)
-		cv2.circle(img,(box_xmax,box_ymax),5,(122,0,0),-1)
+		cv2.circle(img, (box_xmin, box_ymin), 5, (122,0,0), -1)
+		cv2.circle(img, (box_xmax, box_ymin), 5, (122,0,0), -1)
+		cv2.circle(img, (box_xmin, box_ymax), 5, (122,0,0), -1)
+		cv2.circle(img, (box_xmax, box_ymax), 5, (122,0,0), -1)
 
 		cv2.circle(img, (288,480), 5, (255,0,0),-1 ) #center
 
-		cv2.circle(img_transformed,(int(warp_xymin[0]),int(warp_xymin[1])),5,(122,122,0),-1)
-		cv2.circle(img_transformed,(int(warp_xymin[0]),int(warp_xymax[1])),5,(122,122,0),-1)
-		cv2.circle(img_transformed,(int(warp_xymax[0]),int(warp_xymin[1])),5,(122,122,0),-1)
-		cv2.circle(img_transformed,(int(warp_xymax[0]),int(warp_xymax[1])),5,(122,122,0),-1)
+		cv2.circle(img_transformed, (int(warp_xymin[0]), int(warp_xymin[1])), 5, (122,122,0), -1)
+		cv2.circle(img_transformed, (int(warp_xymin[0]), int(warp_xymax[1])), 5, (122,122,0), -1)
+		cv2.circle(img_transformed, (int(warp_xymax[0]), int(warp_xymin[1])), 5, (122,122,0), -1)
+		cv2.circle(img_transformed, (int(warp_xymax[0]), int(warp_xymax[1])), 5, (122,122,0), -1)
 
-		print("warp_xymin",warp_xymin)
+		print("warp_xymin", warp_xymin)
 		
 		#yolo center visualization
 		if (len(new_data_list) > 0):
@@ -209,22 +213,22 @@ if __name__ == '__main__':
 			yello_cnt = 0
 			blue_cnt = 0
 			
-			for i in range (0,len(new_data_list)):
-				print("i",i)
+			for i in range (0, len(new_data_list)):
+				print("i", i)
 				print("data list i", new_data_list[i])
  
 				if (new_data_list[i].flag == 0):
-					yello_cnt+=1
+					yello_cnt += 1
 					print("yello_cnt : ", yello_cnt)
 					yellow_arr.append([new_data_list[i].flag, new_data_list[i].x, new_data_list[i].y])
 					#print("yellow_arr", yellow_arr)
-					cv2.circle(img_transformed,(int(new_data_list[i].x),int(new_data_list[i].y)),5,(0,122,122),-1)
+					cv2.circle(img_transformed, (int(new_data_list[i].x), int(new_data_list[i].y)), 5, (0,122,122), -1)
 				elif (new_data_list[i].flag == 1):
-					blue_cnt+=1
+					blue_cnt += 1
 					print("blue_cnt : ", blue_cnt)
 					blue_arr.append([new_data_list[i].flag, new_data_list[i].x, new_data_list[i].y])	
 					#print("blue_arr", blue_arr)
-					cv2.circle(img_transformed,(int(new_data_list[i].x),int(new_data_list[i].y)),5,(0,122,122),-1)
+					cv2.circle(img_transformed, (int(new_data_list[i].x), int(new_data_list[i].y)), 5, (0,122,122), -1)
 				#print("cone_center", cone_center_x, cone_center_y)
 			
 			yellow_arr = sorted(yellow_arr, key=lambda x:(x[2],x[1],x[0]))
@@ -241,23 +245,23 @@ if __name__ == '__main__':
 			warp_right_point /= warp_right_point[2]
 
 			if (len(yellow_arr) == 1):
-				cv2.line(img_transformed,(int(warp_left_point[0]),int(warp_left_point[1])),(int(yellow_arr[len(yellow_arr)-1][1]),int(yellow_arr[len(yellow_arr)-1][2])),(255,0,0),15)
-				cv2.line(black_img,(int(warp_left_point[0]),int(warp_left_point[1])),(int(yellow_arr[len(yellow_arr)-1][1]),int(yellow_arr[len(yellow_arr)-1][2])),(255,255,255),15)
+				cv2.line(img_transformed, (int(warp_left_point[0]),int(warp_left_point[1])),(int(yellow_arr[len(yellow_arr)-1][1]),int(yellow_arr[len(yellow_arr)-1][2])),(255,0,0),15)
+				cv2.line(black_img, (int(warp_left_point[0]),int(warp_left_point[1])),(int(yellow_arr[len(yellow_arr)-1][1]),int(yellow_arr[len(yellow_arr)-1][2])),(255,255,255),15)
 			if (len(blue_arr) == 1):
-				cv2.line(img_transformed,(int(warp_right_point[0]),int(warp_right_point[1])),(int(blue_arr[len(blue_arr)-1][1]),int(blue_arr[len(blue_arr)-1][2])),(255,0,0),15)
-				cv2.line(black_img,(int(warp_right_point[0]),int(warp_right_point[1])),(int(blue_arr[len(blue_arr)-1][1]),int(blue_arr[len(blue_arr)-1][2])),(255,255,255),15)
+				cv2.line(img_transformed, (int(warp_right_point[0]),int(warp_right_point[1])),(int(blue_arr[len(blue_arr)-1][1]),int(blue_arr[len(blue_arr)-1][2])),(255,0,0),15)
+				cv2.line(black_img, (int(warp_right_point[0]),int(warp_right_point[1])),(int(blue_arr[len(blue_arr)-1][1]),int(blue_arr[len(blue_arr)-1][2])),(255,255,255),15)
 			if (len(yellow_arr) >= 2):
-				for j in range(0,len(yellow_arr)-1):
-					cv2.line(img_transformed,(int(warp_left_point[0]),int(warp_left_point[1])),(int(yellow_arr[len(yellow_arr)-1][1]),int(yellow_arr[len(yellow_arr)-1][2])),(255,0,0),15)
-					cv2.line(img_transformed,(int(yellow_arr[j][1]),int(yellow_arr[j][2])),(int(yellow_arr[j+1][1]),int(yellow_arr[j+1][2])),(255,0,0),15)
-					cv2.line(black_img,(int(warp_left_point[0]),int(warp_left_point[1])),(int(yellow_arr[len(yellow_arr)-1][1]),int(yellow_arr[len(yellow_arr)-1][2])),(255,255,255),15)
-					cv2.line(black_img,(int(yellow_arr[j][1]),int(yellow_arr[j][2])),(int(yellow_arr[j+1][1]),int(yellow_arr[j+1][2])),(255,255,255),15)
+				for j in range(0, len(yellow_arr) - 1):
+					cv2.line(img_transformed, (int(warp_left_point[0]), int(warp_left_point[1])), (int(yellow_arr[len(yellow_arr) - 1][1]),int(yellow_arr[len(yellow_arr)-1][2])),(255,0,0),15)
+					cv2.line(img_transformed, (int(yellow_arr[j][1]), int(yellow_arr[j][2])), (int(yellow_arr[j+1][1]), int(yellow_arr[j+1][2])), (255,0,0), 15)
+					cv2.line(black_img, (int(warp_left_point[0]), int(warp_left_point[1])), (int(yellow_arr[len(yellow_arr) - 1][1]),int(yellow_arr[len(yellow_arr)-1][2])),(255,255,255),15)
+					cv2.line(black_img, (int(yellow_arr[j][1]), int(yellow_arr[j][2])), (int(yellow_arr[j+1][1]), int(yellow_arr[j+1][2])), (255,255,255), 15)
 			if (len(blue_arr) >= 2):
-				for j in range(0,len(blue_arr)-1):
-					cv2.line(img_transformed,(int(warp_right_point[0]),int(warp_right_point[1])),(int(blue_arr[len(blue_arr)-1][1]),int(blue_arr[len(blue_arr)-1][2])),(0,255,0),15)
-					cv2.line(img_transformed,(int(blue_arr[j][1]),int(blue_arr[j][2])),(int(blue_arr[j+1][1]),int(blue_arr[j+1][2])),(0,255,0),15)
-					cv2.line(black_img,(int(warp_right_point[0]),int(warp_right_point[1])),(int(blue_arr[len(blue_arr)-1][1]),int(blue_arr[len(blue_arr)-1][2])),(255,255,255),15)
-					cv2.line(black_img,(int(blue_arr[j][1]),int(blue_arr[j][2])),(int(blue_arr[j+1][1]),int(blue_arr[j+1][2])),(255,255,255),15)
+				for j in range(0, len(blue_arr) - 1):
+					cv2.line(img_transformed, (int(warp_right_point[0]), int(warp_right_point[1])), (int(blue_arr[len(blue_arr) - 1][1]), int(blue_arr[len(blue_arr) - 1][2])), (0,255,0), 15)
+					cv2.line(img_transformed, (int(blue_arr[j][1]), int(blue_arr[j][2])), (int(blue_arr[j+1][1]), int(blue_arr[j+1][2])), (0,255,0), 15)
+					cv2.line(black_img, (int(warp_right_point[0]), int(warp_right_point[1])), (int(blue_arr[len(blue_arr) - 1][1]), int(blue_arr[len(blue_arr) - 1][2])), (255,255,255), 15)
+					cv2.line(black_img, (int(blue_arr[j][1]), int(blue_arr[j][2])), (int(blue_arr[j+1][1]), int(blue_arr[j + 1][2])), (255,255,255), 15)
 			
 			#print("warp_left_point:", warp_left_point)
 			#print("warp_right_point:", warp_right_point)
@@ -265,15 +269,15 @@ if __name__ == '__main__':
 			#('warp_right_point:', array([ 775.20601084,  886.70705631,    1.        ]))
 
 			# left range
-			cv2.circle(black_img,(200, 850),8,(255,0,255),-1)
-			cv2.circle(black_img,(400, 850),8,(255,0,255),-1)
-			cv2.circle(black_img,(200, 600),8,(255,0,255),-1)
-			cv2.circle(black_img,(400, 650),8,(255,0,255),-1)
+			cv2.circle(black_img, (200, 850), 8, (255,0,255), -1)
+			cv2.circle(black_img, (400, 850), 8, (255,0,255), -1)
+			cv2.circle(black_img, (200, 600), 8, (255,0,255), -1)
+			cv2.circle(black_img, (400, 650), 8, (255,0,255), -1)
 			# right range
-			cv2.circle(black_img,(650, 850),8,(255,0,255),-1)
-			cv2.circle(black_img,(850, 850),8,(255,0,255),-1)
-			cv2.circle(black_img,(850, 600),8,(255,0,255),-1)
-			cv2.circle(black_img,(650, 650),8,(255,0,255),-1)
+			cv2.circle(black_img, (650, 850), 8, (255,0,255), -1)
+			cv2.circle(black_img, (850, 850), 8, (255,0,255), -1)
+			cv2.circle(black_img, (850, 600), 8, (255,0,255), -1)
+			cv2.circle(black_img, (650, 650), 8, (255,0,255), -1)
 
 		out_img, left_roi, right_roi, x_location = slidingwindow.slidingwindow(black_img)
 
