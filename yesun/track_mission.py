@@ -96,9 +96,9 @@ def bounding_callback(msg):
 		#print("Data_list", data_list)
 		#print("data_list len", len(data_list))
 
-	cone_array = ColorconeArray()
-	cone_array.visions = data_list
-	cone_pub.publish(cone_array)
+	#cone_array = ColorconeArray()
+	#cone_array.visions = data_list
+	#cone_pub.publish(cone_array)
 	
 # center_visualization
 def check_center(image):
@@ -163,8 +163,11 @@ if __name__ == '__main__':
 		np.save(matrix_path, np_matrix)	
 		# print(np_matrix)
 	    	img_transformed = cv2.warpPerspective(img, matrix, (width, height))
+	    	img_transformed_y = cv2.warpPerspective(img, matrix, (width, height))
+		img_transformed_b = cv2.warpPerspective(img, matrix, (width, height))
 
-		black_img = np.zeros((height, width, 3), np.uint8)
+		yellow_img = np.zeros((height, width, 3), np.uint8)
+		blue_img = np.zeros((height, width, 3), np.uint8)
 		#black_img_roi = black_img[200:850, 0:1000]
 
 		if box_xmin == None or box_ymin == None or box_xmax == None or box_ymax == None: continue 
@@ -197,18 +200,18 @@ if __name__ == '__main__':
 
 		cv2.circle(img, (288,480), 5, (255,0,0),-1 ) #center
 
-		cv2.circle(img_transformed, (int(warp_xymin[0]), int(warp_xymin[1])), 5, (122,122,0), -1)
-		cv2.circle(img_transformed, (int(warp_xymin[0]), int(warp_xymax[1])), 5, (122,122,0), -1)
-		cv2.circle(img_transformed, (int(warp_xymax[0]), int(warp_xymin[1])), 5, (122,122,0), -1)
-		cv2.circle(img_transformed, (int(warp_xymax[0]), int(warp_xymax[1])), 5, (122,122,0), -1)
+		#cv2.circle(img_transformed, (int(warp_xymin[0]), int(warp_xymin[1])), 25, (0,0,255), -1)
+		#cv2.circle(img_transformed, (int(warp_xymin[0]), int(warp_xymax[1])), 5, (122,122,0), -1)
+		#cv2.circle(img_transformed, (int(warp_xymax[0]), int(warp_xymin[1])), 5, (122,122,0), -1)
+		#cv2.circle(img_transformed, (int(warp_xymax[0]), int(warp_xymax[1])), 5, (122,122,0), -1)
 
 		print("warp_xymin", warp_xymin)
-		
+		yellow_arr = []
+		blue_arr = []
 		# yolo center visualization
 		if (len(new_data_list) > 0):
 			print("data_list**************", data_list)
-			yellow_arr = []
-			blue_arr = []
+			
 			print("len(new_data_list) :", len(new_data_list))
 			
 			yello_cnt = 0
@@ -223,13 +226,13 @@ if __name__ == '__main__':
 					print("yello_cnt : ", yello_cnt)
 					yellow_arr.append([new_data_list[i].flag, new_data_list[i].x, new_data_list[i].y])
 					#print("yellow_arr", yellow_arr)
-					cv2.circle(img_transformed, (int(new_data_list[i].x), int(new_data_list[i].y)), 5, (0,122,122), -1)
+					cv2.circle(img_transformed_y, (int(new_data_list[i].x), int(new_data_list[i].y)), 25, (0,122,122), -1)
 				elif (new_data_list[i].flag == 1):
 					blue_cnt += 1
 					print("blue_cnt : ", blue_cnt)
 					blue_arr.append([new_data_list[i].flag, new_data_list[i].x, new_data_list[i].y])	
 					#print("blue_arr", blue_arr)
-					cv2.circle(img_transformed, (int(new_data_list[i].x), int(new_data_list[i].y)), 5, (0,122,122), -1)
+					cv2.circle(img_transformed_b, (int(new_data_list[i].x), int(new_data_list[i].y)), 25, (0,122,122), -1)
 				#print("cone_center", cone_center_x, cone_center_y)
 			
 			yellow_arr = sorted(yellow_arr, key=lambda x:(x[2],x[1],x[0]))
@@ -246,31 +249,34 @@ if __name__ == '__main__':
 			warp_right_point /= warp_right_point[2]
 
 			if (len(yellow_arr) == 1):
-				cv2.line(img_transformed, (int(warp_left_point[0]),int(warp_left_point[1])),(int(yellow_arr[len(yellow_arr)-1][1]),int(yellow_arr[len(yellow_arr)-1][2])),(255,0,0),15)
-				cv2.line(black_img, (int(warp_left_point[0]),int(warp_left_point[1])),(int(yellow_arr[len(yellow_arr)-1][1]),int(yellow_arr[len(yellow_arr)-1][2])),(255,255,255),15)
+				cv2.line(img_transformed_y, (int(warp_left_point[0]),int(warp_left_point[1])),(int(yellow_arr[len(yellow_arr)-1][1]),int(yellow_arr[len(yellow_arr)-1][2])),(255,255,255),15)
+				cv2.line(yellow_img, (int(warp_left_point[0]),int(warp_left_point[1])),(int(yellow_arr[len(yellow_arr)-1][1]),int(yellow_arr[len(yellow_arr)-1][2])),(255,255,255),15)
 			if (len(blue_arr) == 1):
-				cv2.line(img_transformed, (int(warp_right_point[0]),int(warp_right_point[1])),(int(blue_arr[len(blue_arr)-1][1]),int(blue_arr[len(blue_arr)-1][2])),(255,0,0),15)
-				cv2.line(black_img, (int(warp_right_point[0]),int(warp_right_point[1])),(int(blue_arr[len(blue_arr)-1][1]),int(blue_arr[len(blue_arr)-1][2])),(255,255,255),15)
+				cv2.line(img_transformed_b, (int(warp_right_point[0]),int(warp_right_point[1])),(int(blue_arr[len(blue_arr)-1][1]),int(blue_arr[len(blue_arr)-1][2])),(255,255,255),15)
+				cv2.line(blue_img, (int(warp_right_point[0]),int(warp_right_point[1])),(int(blue_arr[len(blue_arr)-1][1]),int(blue_arr[len(blue_arr)-1][2])),(255,255,255),15)
 			if (len(yellow_arr) >= 2):
 				for j in range(0, len(yellow_arr) - 1):
-					cv2.line(img_transformed, (int(warp_left_point[0]), int(warp_left_point[1])), (int(yellow_arr[len(yellow_arr) - 1][1]),int(yellow_arr[len(yellow_arr)-1][2])),(255,0,0),15)
-					cv2.line(img_transformed, (int(yellow_arr[j][1]), int(yellow_arr[j][2])), (int(yellow_arr[j+1][1]), int(yellow_arr[j+1][2])), (255,0,0), 15)
-					cv2.line(black_img, (int(warp_left_point[0]), int(warp_left_point[1])), (int(yellow_arr[len(yellow_arr) - 1][1]),int(yellow_arr[len(yellow_arr)-1][2])),(255,255,255),15)
-					cv2.line(black_img, (int(yellow_arr[j][1]), int(yellow_arr[j][2])), (int(yellow_arr[j+1][1]), int(yellow_arr[j+1][2])), (255,255,255), 15)
+					cv2.line(img_transformed_y, (int(warp_left_point[0]), int(warp_left_point[1])), (int(yellow_arr[len(yellow_arr) - 1][1]),int(yellow_arr[len(yellow_arr)-1][2])),(255,0,0),15)
+					cv2.line(img_transformed_y, (int(yellow_arr[j][1]), int(yellow_arr[j][2])), (int(yellow_arr[j+1][1]), int(yellow_arr[j+1][2])), (255,0,0), 15)
+					cv2.line(yellow_img, (int(warp_left_point[0]), int(warp_left_point[1])), (int(yellow_arr[len(yellow_arr) - 1][1]),int(yellow_arr[len(yellow_arr)-1][2])),(255,255,255),15)
+					cv2.line(yellow_img, (int(yellow_arr[j][1]), int(yellow_arr[j][2])), (int(yellow_arr[j+1][1]), int(yellow_arr[j+1][2])), (255,255,255), 15)
 			if (len(blue_arr) >= 2):
 				for j in range(0, len(blue_arr) - 1):
-					cv2.line(img_transformed, (int(warp_right_point[0]), int(warp_right_point[1])), (int(blue_arr[len(blue_arr) - 1][1]), int(blue_arr[len(blue_arr) - 1][2])), (0,255,0), 15)
-					cv2.line(img_transformed, (int(blue_arr[j][1]), int(blue_arr[j][2])), (int(blue_arr[j+1][1]), int(blue_arr[j+1][2])), (0,255,0), 15)
-					cv2.line(black_img, (int(warp_right_point[0]), int(warp_right_point[1])), (int(blue_arr[len(blue_arr) - 1][1]), int(blue_arr[len(blue_arr) - 1][2])), (255,255,255), 15)
-					cv2.line(black_img, (int(blue_arr[j][1]), int(blue_arr[j][2])), (int(blue_arr[j+1][1]), int(blue_arr[j + 1][2])), (255,255,255), 15)
+					cv2.line(img_transformed_b, (int(warp_right_point[0]), int(warp_right_point[1])), (int(blue_arr[len(blue_arr) - 1][1]), int(blue_arr[len(blue_arr) - 1][2])), (0,255,0), 15)
+					cv2.line(img_transformed_b, (int(blue_arr[j][1]), int(blue_arr[j][2])), (int(blue_arr[j+1][1]), int(blue_arr[j+1][2])), (0,255,0), 15)
+					cv2.line(blue_img, (int(warp_right_point[0]), int(warp_right_point[1])), (int(blue_arr[len(blue_arr) - 1][1]), int(blue_arr[len(blue_arr) - 1][2])), (255,255,255), 15)
+					cv2.line(blue_img, (int(blue_arr[j][1]), int(blue_arr[j][2])), (int(blue_arr[j+1][1]), int(blue_arr[j + 1][2])), (255,255,255), 15)
 			
 			#print("warp_left_point:", warp_left_point)
 			#print("warp_right_point:", warp_right_point)
 			#('warp_left_point:', array([ 290.31703522,  886.70705631,    1.        ]))
 			#('warp_right_point:', array([ 775.20601084,  886.70705631,    1.        ]))
 			
-
-		out_img, left_roi, right_roi, x_location = slidingwindow.slidingwindow(black_img)
+		if (len(yellow_arr) >= len(blue_arr)):
+			out_img, x_location = slidingwindow.slidingwindow(yellow_img)
+		else:
+			out_img, x_location = slidingwindow.slidingwindow(blue_img)
+	
 
 		try:
 			out2.write(img)
@@ -280,8 +286,11 @@ if __name__ == '__main__':
 
 
 		#cv2.imshow("display", img)
-		cv2.imshow("black_img : ", black_img)
+		#cv2.imshow("yellow_img : ", yellow_img)
+		#cv2.imshow("blue_img : ", blue_img)
 		#cv2.imshow("warp", img_transformed)
+		cv2.imshow("warp_y", img_transformed_y)
+		cv2.imshow("warp_b", img_transformed_b)
 		cv2.imshow('out_img', out_img)
 		#cv2.imshow('left_roi', left_roi)
 		#cv2.imshow('right_roi', right_roi)
