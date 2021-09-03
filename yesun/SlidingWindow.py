@@ -6,13 +6,13 @@ class SlidingWindow:
     def __init__(self):
         self.left_x_lower = 200 
         self.left_x_upper = 400
-        self.left_y_lower = 500
-	self.left_y_upper = 550 
+        self.left_y_lower = 600
+	self.left_y_upper = 650 
 
         self.right_x_lower = 650
         self.right_x_upper = 850 
-        self.right_y_lower = 500
-        self.right_y_upper = 550
+        self.right_y_lower = 600
+        self.right_y_upper = 650
 
     def slidingwindow(self, img):
 		x_location = None
@@ -43,9 +43,9 @@ class SlidingWindow:
 
 		# range of draw line
 		#good_left = ((nonzero_x >= 10) & (nonzero_y >= 380) & (nonzero_x <= width/2 - 80)).nonzero()[0]
-                good_left = ((nonzero_x >= self.left_x_lower) & (nonzero_y >= nonzero_x * (0.25) + 450) & (nonzero_x <= self.left_x_upper)).nonzero()[0] # (-0.5) + 300
+                good_left = ((nonzero_x >= self.left_x_lower) & (nonzero_y >= nonzero_x * (0.25) + 550) & (nonzero_x <= self.left_x_upper)).nonzero()[0] # (-0.5) + 300
 		#good_right = ((nonzero_x >= width/2 + 80) & (nonzero_y >= 380) & (nonzero_x <= width-10)).nonzero()[0]
-                good_right = ((nonzero_x >= self.right_x_lower) & (nonzero_y >= nonzero_x * (-0.25) + 712.5) & (nonzero_x <= self.right_x_upper)).nonzero()[0] # (0.33) + 200
+                good_right = ((nonzero_x >= self.right_x_lower) & (nonzero_y >= nonzero_x * (-0.25) + 812.5) & (nonzero_x <= self.right_x_upper)).nonzero()[0] # (0.33) + 200
 
 		# draw left square
 		square_left = np.array([[self.left_x_lower, height], [self.left_x_lower, self.left_y_lower], [self.left_x_upper, self.left_y_upper], [self.left_x_upper, height]], np.int32)
