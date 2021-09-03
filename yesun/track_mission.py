@@ -269,16 +269,6 @@ if __name__ == '__main__':
 			#('warp_left_point:', array([ 290.31703522,  886.70705631,    1.        ]))
 			#('warp_right_point:', array([ 775.20601084,  886.70705631,    1.        ]))
 			
-			# # left range
-			# cv2.circle(black_img,(200, 850),8,(255,0,255),-1)
-			# cv2.circle(black_img,(400, 850),8,(255,0,255),-1)
-			# cv2.circle(black_img,(200, 600),8,(255,0,255),-1)
-			# cv2.circle(black_img,(400, 650),8,(255,0,255),-1)
-			# # right range
-			# cv2.circle(black_img,(650, 850),8,(255,0,255),-1)
-			# cv2.circle(black_img,(850, 850),8,(255,0,255),-1)
-			# cv2.circle(black_img,(850, 600),8,(255,0,255),-1)
-			# cv2.circle(black_img,(650, 650),8,(255,0,255),-1)
 
 		out_img, left_roi, right_roi, x_location = slidingwindow.slidingwindow(black_img)
 
