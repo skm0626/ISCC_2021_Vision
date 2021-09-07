@@ -26,10 +26,14 @@ now = datetime.now()
 
 center = np.array([288,480,1], np.float32)
 
-up_left = [253,315]
-up_right = [323,315]
-down_left = [247,383]
-down_right = [328,383]
+up_left = [256,315]
+up_right = [320,315]
+#up_left = [253,315]
+#up_right = [323,315]
+#down_left = [247,383]
+#down_right = [328,383]
+down_left = [237,383]
+down_right = [338,383]
 corner_points_array = np.float32([up_left,up_right,down_left,down_right])
 
 box_class = None
@@ -47,7 +51,7 @@ drive_values_pub = rospy.Publisher('control_value', drive_values, queue_size=1)
 data_list = []
 x_location_list = list()
 lpf_list = []
-x_location_old = 500
+x_location_old = 485
 car_run_speed = 4
 
 
@@ -152,10 +156,7 @@ if __name__ == '__main__':
 	
 	#cap = cv2.VideoCapture("/home/foscar/ISCC_2021/src/vision_distance/src/ISCC_2021_Vision/yesun/8-31/origin_2021-8-31-19-42.avi")
 	bbox_sub = rospy.Subscriber("/darknet_ros/bounding_boxes/", BoundingBoxes, bounding_callback)
-	
-	out = cv2.VideoWriter('/home/foscar/ISCC_2021/src/vision_distance/src/ISCC_2021_Vision/yesun/9-5/origin_{}-{}-{}-{}-{}.avi'.format(now.year,now.month, now.day, now.hour, now.minute), cv2.VideoWriter_fourcc(*'MJPG'),30,(640,480))
-	out2 = cv2.VideoWriter('/home/foscar/ISCC_2021/src/vision_distance/src/ISCC_2021_Vision/yesun/9-5/dot_origin_{}-{}-{}-{}-{}.avi'.format(now.year,now.month, now.day, now.hour, now.minute), cv2.VideoWriter_fourcc(*'MJPG'),30,(640,480))
-	out3 = cv2.VideoWriter('/home/foscar/ISCC_2021/src/vision_distance/src/ISCC_2021_Vision/yesun/9-5/warp_{}-{}-{}-{}-{}.avi'.format(now.year,now.month, now.day, now.hour, now.minute), cv2.VideoWriter_fourcc(*'MJPG'),30,(1000,850))
+
 	rate = rospy.Rate(10)
 	while not rospy.is_shutdown(): #cap.isOpened()
 		#ret, img = cap.read()
@@ -164,11 +165,6 @@ if __name__ == '__main__':
 		#print(ret)
 		if img.size != (640 * 480 * 3):
                     continue
-
-		try:
-			out.write(img)
-		except:
-			pass
 		
 		width = 1000
 	    	height = 850
@@ -183,10 +179,10 @@ if __name__ == '__main__':
 		#	continue
 				
 		
-		img_up_left = [450, 650] #[220,150] #[400,600]
-		img_up_right = [550, 650] #[420,150] #[600,600]
-		img_down_left = [450, 750] #[220,350] #[600,800]
-		img_down_right = [550, 750] #[420,350] #[400,800]
+		img_up_left = [320,520]#[450, 650] #[220,150] #[400,600]
+		img_up_right = [520,520]#[550, 650] #[420,150] #[600,600]
+		img_down_left = [320,720]#[450, 750] #[220,350] #[600,800]
+		img_down_right = [520,720]#[550, 750] #[420,350] #[400,800]
 		img_params = np.float32([img_up_left, img_up_right, img_down_left, img_down_right])
 
 	    	# Compute and return the transformation matrix
@@ -274,8 +270,11 @@ if __name__ == '__main__':
 			print("sort_blue", blue_arr)
 			
 
-			left_point = np.array([-50.18,520,1], np.float32) #[184.18,520,1]
-			right_point = np.array([690.4,520,1], np.float32) #[389.4,520,1]
+			#left_point = np.array([-50.18,520,1], np.float32) #[184.18,520,1]
+			#right_point = np.array([690.4,520,1], np.float32) #[389.4,520,1]
+			left_point = np.array([155.18,520,1], np.float32) #[184.18,520,1]
+			right_point = np.array([450.4,520,1], np.float32) #[389.4,520,1]
+
 			warp_left_point = np.matmul(np_matrix, left_point)
 			warp_left_point /= warp_left_point[2]
 			warp_right_point = np.matmul(np_matrix, right_point)
@@ -304,27 +303,15 @@ if __name__ == '__main__':
 			#print("warp_right_point:", warp_right_point)
 			#('warp_left_point:', array([ 290.31703522,  886.70705631,    1.        ]))
 			#('warp_right_point:', array([ 775.20601084,  886.70705631,    1.        ]))
-			
-		if (len(yellow_arr) >= len(blue_arr)):
-			out_img, x_location = slidingwindow.slidingwindow(yellow_img)
-			if x_location is None:
-			    cv2.circle(out_img, (x_location_old, 650), 5, (255, 255, 0), -1)
-			    x_location = x_location_old
-			else:
-			    cv2.circle(out_img, (x_location, 650), 5, (0, 0, 255), -1)
-			    x_location_old = int(x_location)
-		else:
-			out_img, x_location = slidingwindow.slidingwindow(blue_img)
-			if x_location is None:
-			    cv2.circle(out_img, (x_location_old, 650), 5, (255, 255, 0), -1)
-			    x_location = x_location_old
-			else:
-			    x_location -= 495
-			    cv2.circle(out_img, (x_location, 650), 5, (0, 0, 255), -1)
-			    x_location_old = int(x_location)
-
 	
-		#print("x_locationnnnnnnnn:", x_location)
+
+		out_img, x_location = slidingwindow.slidingwindow(yellow_img)
+		if x_location is None:
+		    cv2.circle(out_img, (x_location_old, 650), 5, (255, 255, 0), -1)
+		    x_location = x_location_old
+		else:
+		    cv2.circle(out_img, (x_location, 650), 5, (0, 0, 255), -1)
+		    x_location_old = int(x_location)
 		
 
 		# pid control 
@@ -333,21 +320,13 @@ if __name__ == '__main__':
 		drive(pid)
 
 
-
-		try:
-			out2.write(img)
-			out3.write(img_transformed)
-		except:
-			pass
-
-
 		cv2.imshow("display", img)
 		#cv2.imshow("yellow_img : ", yellow_img)
 		#cv2.imshow("blue_img : ", blue_img)
 		cv2.imshow("warp", img_transformed)
-		cv2.imshow("roi_img", roi_img)
-		cv2.imshow("warp_y", img_transformed_y)
-		cv2.imshow("warp_b", img_transformed_b)
+		#cv2.imshow("roi_img", roi_img)
+		#cv2.imshow("warp_y", img_transformed_y)
+		#cv2.imshow("warp_b", img_transformed_b)
 		cv2.imshow('out_img', out_img)
 		#cv2.imshow('left_roi', left_roi)
 		#cv2.imshow('right_roi', right_roi)

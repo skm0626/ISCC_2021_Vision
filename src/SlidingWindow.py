@@ -18,8 +18,10 @@ class SlidingWindow:
 		out_img = np.zeros((height, width, 3), np.uint8)
 		out_img = np.uint8(out_img)
 
-		window_height = 10
-		window_num = 15
+		#window_height = 10
+		#window_num = 15
+                window_height = 10
+		window_num = 7
 
 		nonzero = img.nonzero()
 
@@ -31,7 +33,7 @@ class SlidingWindow:
 
 		lane = []
 
-		good_line = ((nonzero_x >= self.x_lower) & (nonzero_y >= 600) & (nonzero_x <= self.x_upper)).nonzero()[0]
+		good_line = ((nonzero_x >= self.x_lower) & (nonzero_y >= 700) & (nonzero_x <= self.x_upper)).nonzero()[0]
 
 		# draw square
 		square = np.array([[self.x_lower, height], [self.x_lower, self.y_lower], [self.x_upper, self.y_upper], [self.x_upper, height]], np.int32)
@@ -80,9 +82,9 @@ class SlidingWindow:
 		    elif nonzero_y[lane] != [] and nonzero_x[lane] != []:
 		        p_left = np.polyfit(nonzero_y[lane], nonzero_x[lane], 3)
 		        x_represent = np.int(np.polyval(p_left, win_y_high))
-
-		    if win_y_low >= 600 and win_y_low < 700:
-		        x_location = x_represent + 215 #245#150 #0.2
+                    # 600 700
+		    if win_y_low >= 700 and win_y_low < 800:
+		        x_location = x_represent + 230 #245#150 #0.2
 
 		    lane.extend(good_line)
 		    #print("X_LOCATIONNNNNN", x_location)
