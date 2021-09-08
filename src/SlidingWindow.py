@@ -90,27 +90,3 @@ class SlidingWindow:
 		    #print("X_LOCATIONNNNNN", x_location)
 
 		return out_img, x_location
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
