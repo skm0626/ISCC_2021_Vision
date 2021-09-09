@@ -11,14 +11,11 @@ from sensor_msgs.msg import Image
 from vision_distance.msg import Delivery, DeliveryArray
 from geometry_msgs.msg import Point
 from cv_bridge import CvBridge
-from datetime import datetime
 from SlidingWindow import SlidingWindow
 
 bridge = CvBridge()
 slidingwindow = SlidingWindow()
 img = np.empty(shape=[0])
-
-now = datetime.now()
 
 pixel = 80.0/200.0 # 0.4cm
 invisible_distance = 366
@@ -146,9 +143,6 @@ if __name__ == '__main__':
 	#cap = cv2.VideoCapture("/home/foscar/ISCC_2021/src/vision_distance/src/ISCC_2021_Vision/yesun/8-31/origin_2021-8-31-19-42.avi")
 	bbox_sub = rospy.Subscriber("/darknet_ros/bounding_boxes/", BoundingBoxes, bounding_callback)
 	
-	#out = cv2.VideoWriter('/home/foscar/ISCC_2021/src/vision_distance/src/ISCC_2021_Vision/yesun/9-2/origin_{}-{}-{}-{}-{}.avi'.format(now.year,now.month, now.day, now.hour, now.minute), cv2.VideoWriter_fourcc(*'MJPG'),30,(640,480))
-	#out2 = cv2.VideoWriter('/home/foscar/ISCC_2021/src/vision_distance/src/ISCC_2021_Vision/yesun/9-2/dot_origin_{}-{}-{}-{}-{}.avi'.format(now.year,now.month, now.day, now.hour, now.minute), cv2.VideoWriter_fourcc(*'MJPG'),30,(640,480))
-	#out3 = cv2.VideoWriter('/home/foscar/ISCC_2021/src/vision_distance/src/ISCC_2021_Vision/yesun/9-2/warp_{}-{}-{}-{}-{}.avi'.format(now.year,now.month, now.day, now.hour, now.minute), cv2.VideoWriter_fourcc(*'MJPG'),30,(1000,850))
 	rate = rospy.Rate(10)
 	while not rospy.is_shutdown(): #cap.isOpened()
 		#ret, img = cap.read()
@@ -157,11 +151,6 @@ if __name__ == '__main__':
 		#print(ret)
 		if img.size != (640 * 480 * 3):
                     continue
-
-		try:
-			out.write(img)
-		except:
-			pass
 		
 		width = 1000
 	    	height = 850
@@ -170,12 +159,9 @@ if __name__ == '__main__':
 		
 		if len(data_list) > 0:
 			new_data_list = copy.deepcopy(data_list)
-			#new_data_list = data_list.copy()
-			#print("new_data_list %%%%%%%%%%%%%% ", new_data_list)
 		#else:
 		#	continue
-				
-
+	
 		img_up_left = [400,600]#[450, 650] #[220,150] #[400,600]
 		img_up_right = [600,600]#[550, 650] #[420,150] #[600,600]
 		img_down_left = [400,800]#[450, 750] #[220,350] #[400,800]
@@ -219,22 +205,8 @@ if __name__ == '__main__':
 
 		cv2.circle(img, (288,480), 5, (255,0,0),-1 ) #center
 
-		#cv2.circle(img_transformed, (int(warp_xymin[0]), int(warp_xymin[1])), 25, (0,0,255), -1)
-		#cv2.circle(img_transformed, (int(warp_xymin[0]), int(warp_xymax[1])), 5, (122,122,0), -1)
-		#cv2.circle(img_transformed, (int(warp_xymax[0]), int(warp_xymin[1])), 5, (122,122,0), -1)
-		#cv2.circle(img_transformed, (int(warp_xymax[0]), int(warp_xymax[1])), 5, (122,122,0), -1)
 
-		#print("warp_xymin", warp_xymin)
-		# yolo center visualization
-		
 		if (len(new_data_list) > 0):
-			#print("data_list**************", data_list)
-			#print("len(new_data_list) :", len(new_data_list))
-			
-			#for i in range (0, len(new_data_list)):
-				#print("i", i)
-				#print("data list i", new_data_list[i])
-
 			left_point = np.array([70.18,520,1], np.float32) #[184.18,520,1]
 			right_point = np.array([570.4,520,1], np.float32) #[389.4,520,1]
 			warp_left_point = np.matmul(np_matrix, left_point)
@@ -242,20 +214,6 @@ if __name__ == '__main__':
 			warp_right_point = np.matmul(np_matrix, right_point)
 			warp_right_point /= warp_right_point[2]
 
-			#print("warp_left_point:", warp_left_point)
-			#print("warp_right_point:", warp_right_point)
-			#('warp_left_point:', array([ 290.31703522,  886.70705631,    1.        ]))
-			#('warp_right_point:', array([ 775.20601084,  886.70705631,    1.        ]))
-
-		try:
-			out2.write(img)
-			out3.write(img_transformed)
-		except:
-			pass
-
-		#cv2.imshow("display", img)
-		#cv2.imshow("warp", img_transformed)
-		#cv2.imshow('out_img', out_img)
 
 		#if cv2.waitKey(1) & 0xFF == ord('q'):
 		#	break    		
