@@ -110,7 +110,8 @@ const float dv_b_coord3[2] = {955539.373947, 1956920.80271};
 // Delivery Distance
 double min_a_dist = 9999999;
 double min_b_dist = 9999999;
-
+// Delivert missiion flag
+int mission_flag = 1;
 // max index of pp_.a_cnt array
 int a_max_index = -1;
 int b_max_index = -1;
@@ -611,11 +612,52 @@ void PurePursuitNode::run(char** argv) {
       ROS_INFO("MISSION_FLAG=%d) A_INDEX(%d)  B_INDEX(%d)", pp_.mission_flag, a_max_index, b_max_index);
       ROS_INFO("B1=%d, B2=%d, B3=%d", pp_.b_cnt[0],pp_.b_cnt[1], pp_.b_cnt[2]);
 
+      //-------------------------------------------modify----------------------------------------------------
+      // mission flag 114줄 전역변수 선언
+      if (mission_flag = 1 && min_b_dist < 850){
+        b_max_index = max_element(pp_.b_cnt.begin(), pp_.b_cnt.end()) - pp_.b_cnt.begin();
+        mission_flag = 2;
+      }
+      else if(mission_flag == 2){
+        if(pp_.a_flag[b_max_index] == true){
+          /*
+          speed down code 
+          */
+          mission_flag = 3;
+        }
+        else if(pp_.a_flag[b_max_index] != true){
+          mission_flag = 1;
+          if (min_b_dist > 850){
+            min_b_dist = 99999999;
+            pp_.b_cnt = {0,0,0};
+          }
+        }
+      } 
+      else if(mission_flag == 3){
+        /*
+        stop code
+        */
+        mission_flag = 4;
+      }
+      else if(mission_flag == 4){
+        /*
+        after stop         
+        */
+        pp_.mission_flag = 100; // what?!
+      }
+      //----------------------------------------------------------------------------------------------------
+      
+
+
+
+
+
+
       // case 2) vision_distance + gps 로직
       // pp_.mission_flag == 1 : dv_b_idx_1 도달 판단
       // pp_.mission_flag == 2 : dv_b_idx_2 도달 판단
       // pp_.mission_flag == 3 : dv_b_idx_3 도달 판단
-      
+      /*
       if(pp_.mission_flag == 0 && pp_.reachMissionIdx(dv_b_idx_0)){
         pp_.mission_flag = 1;
       }
@@ -687,6 +729,7 @@ void PurePursuitNode::run(char** argv) {
         const_velocity_ = 10;
         final_constant = 1.4;
       }
+    */
     }
 
     // MODE 38 - 직선 구간 (부스터)
@@ -893,20 +936,23 @@ void PurePursuitNode::callbackFromDelivery(const vision_distance::DeliveryArray&
         if (min_b_dist > deliverySign[i].dist_y)
           min_b_dist = deliverySign[i].dist_y;
 
-        // if (deliverySign[i].dist_y > 600 && deliverySign[i].dist_y < 1000) {  // dist 수정하기
-        //   if (deliverySign[i].flag == 1)  // B1
-        //   {
-        //       pp_.b_cnt[0] += 1;
-        //   }
-        //   if (deliverySign[i].flag == 2)  // B2
-        //   {
-        //       pp_.b_cnt[1] += 1;
-        //   }
-        //   if (deliverySign[i].flag == 3)  // B3
-        //   {
-        //       pp_.b_cnt[2] += 1;
-        //   }
-        // }
+        if (deliverySign[i].dist_y > 450 && deliverySign[i].dist_y < 850) {  // dist 수정하기
+          if (deliverySign[i].flag == 1)  // B1
+          {
+              pp_.b_cnt[0] += 1;
+          }
+          if (deliverySign[i].flag == 2)  // B2
+          {
+              pp_.b_cnt[1] += 1;
+          }
+          if (deliverySign[i].flag == 3)  // B3
+          {
+              pp_.b_cnt[2] += 1;
+          }
+        }
+        else{
+          min_b_dist = 99999999;
+        }
       }
     }
 
