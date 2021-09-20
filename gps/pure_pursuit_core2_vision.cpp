@@ -608,128 +608,58 @@ void PurePursuitNode::run(char** argv) {
       const_lookahead_distance_ = 6;
       const_velocity_ = 6;
       final_constant = 1.2;
+      // initial flag = 1
+      pp_.mission_flag = 1;
       
       ROS_INFO("MISSION_FLAG=%d) A_INDEX(%d)  B_INDEX(%d)", pp_.mission_flag, a_max_index, b_max_index);
       ROS_INFO("B1=%d, B2=%d, B3=%d", pp_.b_cnt[0],pp_.b_cnt[1], pp_.b_cnt[2]);
 
       //-------------------------------------------modify----------------------------------------------------
       // mission flag 114줄 전역변수 선언
-      if (mission_flag = 1 && min_b_dist < 850){
-        b_max_index = max_element(pp_.b_cnt.begin(), pp_.b_cnt.end()) - pp_.b_cnt.begin();
-        mission_flag = 2;
+      if (pp_.mission_flag == 1 && min_b_dist < 850){
+	if ((pp_.b_cnt[0] + pp_.b_cnt[1] + pp_.b_cnt[2]) != 0){
+        	b_max_index = max_element(pp_.b_cnt.begin(), pp_.b_cnt.end()) - pp_.b_cnt.begin();
+	}
+	/*
+	// for test stop
+	for (int i=0;i<200;i++){
+		pulishControlMsg(0, 0);
+		usleep(10000);
+	  }
+	*/
+        pp_.mission_flag = 2;
       }
-      else if(mission_flag == 2){
+      else if(pp_.mission_flag == 2){
         if(pp_.a_flag[b_max_index] == true){
-          /*
-          speed down code 
-          */
-          mission_flag = 3;
+          // straight 2 sec
+          for (int i=0;i<200;i++){
+		pulishControlMsg(const_velocity_, 0);
+		usleep(10000);
+	  }
+          pp_.mission_flag = 3;
         }
         else if(pp_.a_flag[b_max_index] != true){
-          mission_flag = 1;
+          pp_.mission_flag = 1;
           if (min_b_dist > 850){
             min_b_dist = 99999999;
             pp_.b_cnt = {0,0,0};
           }
         }
       } 
-      else if(mission_flag == 3){
-        /*
-        stop code
-        */
-        mission_flag = 4;
-      }
-      else if(mission_flag == 4){
-        /*
-        after stop         
-        */
-        pp_.mission_flag = 100; // what?!
-      }
-      //----------------------------------------------------------------------------------------------------
-      
-
-
-
-
-
-
-      // case 2) vision_distance + gps 로직
-      // pp_.mission_flag == 1 : dv_b_idx_1 도달 판단
-      // pp_.mission_flag == 2 : dv_b_idx_2 도달 판단
-      // pp_.mission_flag == 3 : dv_b_idx_3 도달 판단
-      /*
-      if(pp_.mission_flag == 0 && pp_.reachMissionIdx(dv_b_idx_0)){
-        pp_.mission_flag = 1;
-      }
-      else if(pp_.mission_flag == 22 && pp_.reachMissionIdx(dv_b_idx_1)){
-        pp_.mission_flag = 2;
-      }
-      else if(pp_.mission_flag == 33 && pp_.reachMissionIdx(dv_b_idx_2)){
-        pp_.mission_flag = 3;
-      }
-
-
-      // Delivery Subscribe 함수와 main 코드 상에서 순서상의 차이가 있을 경우를 대비함.
-      if(pp_.mission_flag == 1 || pp_.mission_flag == 2 || pp_.mission_flag == 3){
-        // Calc max_index
-        b_max_index = max_element(pp_.b_cnt.begin(), pp_.b_cnt.end()) - pp_.b_cnt.begin();
-        // ROS_INFO("B INDEX (MISSION_FLAG=%d) : %d", pp_.mission_flag, b_max_index);
-
-        if (pp_.a_flag[b_max_index] != true) {
-          pp_.b_cnt = {0,0,0};
-          if(pp_.mission_flag == 1){ 
-            pp_.mission_flag = 22; 
-            passed_index.push_back(b_max_index);
-          }
-          else if(pp_.mission_flag == 2){
-            pp_.mission_flag = 33;
-            passed_index.push_back(b_max_index);
-          }
-        }
-      }
-
-      // 배달표지판 매치되고, 정지까지 제대로 했다면  =>  mission_flag = 100
-      // mission_flag == 1, 배달표지판 매치가 안됐다면  =>  mission_flag = 22
-      // mission_flag == 2, 배달표지판 매치가 안됐다면  =>  mission_flag = 33
-      if(pp_.mission_flag == 1 && pp_.reachMissionIdx(dv_b_idx_1)){
-        if(pp_.a_flag[b_max_index] == true){
-          for (int i = 0; i < 50; i++)
-          {
-            pulishControlMsg(0, 0);
-            usleep(100000);  // 0.1초
-          }
-          pp_.mission_flag = 100;
-        }
-      }
-
-      if(pp_.mission_flag == 2 && pp_.reachMissionIdx(dv_b_idx_2)){
-        if(pp_.a_flag[b_max_index] == true){
-          for (int i = 0; i < 50; i++)
-          {
-            pulishControlMsg(0, 0);
-            usleep(100000);  // 0.1초
-          }
-          pp_.mission_flag = 100;
-        }
-      }
-
-      if(pp_.mission_flag == 3 && pp_.reachMissionIdx(dv_b_idx_3)){
-        if(pp_.a_flag[b_max_index] == true){
-          for (int i = 0; i < 50; i++)
-          {
-            pulishControlMsg(0, 0);
-            usleep(100000);  // 0.1초
-          }
-        }
+      else if(pp_.mission_flag == 3){
+	// stop for 2 sec
+        for (int i=0;i<200;i++){
+		pulishControlMsg(0, 0);
+		usleep(10000);
+	  }
         pp_.mission_flag = 100;
       }
-
-      if(pp_.mission_flag == 100){
-        const_lookahead_distance_ = 4;
+      else if(pp_.mission_flag == 100){
+	// path switching
+ 	const_lookahead_distance_ = 4;
         const_velocity_ = 10;
         final_constant = 1.4;
       }
-    */
     }
 
     // MODE 38 - 직선 구간 (부스터)
@@ -929,8 +859,8 @@ void PurePursuitNode::callbackFromDelivery(const vision_distance::DeliveryArray&
 
   for(int i = 0; i < deliverySign.size(); i++) {
     // Delivery B Area
-    if (pp_.mode == 19 || pp_.mode == 20) {
-      if (pp_.mission_flag == 0 || pp_.mission_flag == 22 || pp_.mission_flag == 33){
+    if (pp_.mode == 11 || pp_.mode == 19 || pp_.mode == 20) {
+      if (pp_.mission_flag == 1 || pp_.mission_flag == 22 || pp_.mission_flag == 33){
         //ROS_INFO("delivery dist_y : %f", deliverySign[i].dist_y);
 
         if (min_b_dist > deliverySign[i].dist_y)
@@ -950,9 +880,11 @@ void PurePursuitNode::callbackFromDelivery(const vision_distance::DeliveryArray&
               pp_.b_cnt[2] += 1;
           }
         }
+	/*
         else{
           min_b_dist = 99999999;
         }
+	*/
       }
     }
 
